@@ -16,9 +16,9 @@ def make_computer_move(colour):
 
     depth = 3
     if colour == 'black':
-        min_eval, best_move = alpha_beta_minimax(depth, False, float('-inf'), float('inf'))
+        min_eval, best_move = alpha_beta_quiescence_minimax(depth, False, float('-inf'), float('inf'))
     else:
-        min_eval, best_move = alpha_beta_minimax(depth, True, float('-inf'), float('inf'))
+        min_eval, best_move = alpha_beta_quiescence_minimax(depth, True, float('-inf'), float('inf'))
 
 
     if best_move:

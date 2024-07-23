@@ -189,36 +189,29 @@ def calculate_king_moves(index, board):
         return precomputed_tables.KING_MOVES[index] & ~(board['black_pawn'] | board['black_knight'] | board['black_bishop'] | board['black_rook'] | board['black_queen'] | board['black_king'])
 
 
-def generate_pawn_moves_bitboard(index, board, player_turn, game_states):
-    all_pieces_bitboard = board['white_pawn'] | board['white_knight'] | board['white_bishop'] | board['white_rook'] | \
-                          board['white_queen'] | board['white_king'] | board['black_pawn'] | board['black_knight'] | \
-                          board['black_bishop'] | board['black_rook'] | board['black_queen'] | board['black_king']
-    white_pieces_bitboard = board['white_pawn'] | board['white_knight'] | board['white_bishop'] | board['white_rook'] | \
-                          board['white_queen'] | board['white_king']
-    black_pieces_bitboard = board['black_pawn'] | board['black_knight'] | \
-                          board['black_bishop'] | board['black_rook'] | board['black_queen'] | board['black_king']
-    if player_turn == 'white':
-        attacks = precomputed_tables.PAWN_ATTACKS[1][index] & black_pieces_bitboard
-        if len(game_states) >= 4:
-            en_passants = is_en_passant_legal(board, player_turn, game_states)
+def generate_pawn_moves_bitboard(index):
+    if globals.player_turn == 'white':
+        attacks = precomputed_tables.PAWN_ATTACKS[1][index] & globals.black_pieces_bitboard
+        if len(globals.game_states) >= 4:
+            en_passants = is_en_passant_legal(globals.piece_bitboards, globals.player_turn, globals.game_states)
         else:
             en_passants = np.uint64(0)
         quiets = empty_bitboard
-        white_free = to_bitboard(index + np.uint8(8)) & all_pieces_bitboard == empty_bitboard
-        if (player_turn == 'white' and white_free):
-            quiets = precomputed_tables.PAWN_QUIETS[0][index] & ~all_pieces_bitboard
+        white_free = to_bitboard(index + np.uint8(8)) & globals.all_pieces_bitboard == empty_bitboard
+        if (globals.player_turn == 'white' and white_free):
+            quiets = precomputed_tables.PAWN_QUIETS[0][index] & ~globals.all_pieces_bitboard
 
-    elif player_turn == 'black':
-        attacks = precomputed_tables.PAWN_ATTACKS[0][index] & white_pieces_bitboard
-        if len(game_states) > 3:
-            en_passants = is_en_passant_legal(board, player_turn, game_states)
+    elif globals.player_turn == 'black':
+        attacks = precomputed_tables.PAWN_ATTACKS[0][index] & globals.white_pieces_bitboard
+        if len(globals.game_states) > 3:
+            en_passants = is_en_passant_legal(globals.piece_bitboards, globals.player_turn, globals.game_states)
         else:
             en_passants = np.uint64(0)
         quiets = empty_bitboard
-        black_free = to_bitboard(index - np.uint8(8)) & all_pieces_bitboard == empty_bitboard
+        black_free = to_bitboard(index - np.uint8(8)) & globals.all_pieces_bitboard == empty_bitboard
 
-        if (player_turn == 'black' and black_free):
-            quiets = precomputed_tables.PAWN_QUIETS[1][index] & ~all_pieces_bitboard
+        if (globals.player_turn == 'black' and black_free):
+            quiets = precomputed_tables.PAWN_QUIETS[1][index] & ~globals.all_pieces_bitboard
 
     return attacks | quiets | en_passants
 
@@ -493,7 +486,7 @@ def gen_piece_moves(starting_square, piece):
     colour = globals.player_turn
     moves = []
     if piece == 'white_pawn' or piece == 'black_pawn':
-        moves_bitboard = generate_pawn_moves_bitboard(starting_square, globals.piece_bitboards, colour, globals.game_states)
+        moves_bitboard = generate_pawn_moves_bitboard(starting_square)
     elif piece == 'white_knight' or piece == 'black_knight':
         moves_bitboard = generate_knight_moves(starting_square, globals.piece_bitboards, colour)
     elif piece == 'white_bishop' or piece == 'black_bishop':
@@ -533,12 +526,7 @@ def find_all_moves():
 
 def gen_legal_moves():
     opponent_colour = 'white' if globals.player_turn == 'black' else 'black'
-    opponent_bitboard = (globals.piece_bitboards[f'{opponent_colour}_pawn'] |
-                         globals.piece_bitboards[f'{opponent_colour}_knight'] |
-                         globals.piece_bitboards[f'{opponent_colour}_bishop'] |
-                         globals.piece_bitboards[f'{opponent_colour}_rook'] |
-                         globals.piece_bitboards[f'{opponent_colour}_queen'] |
-                         globals.piece_bitboards[f'{opponent_colour}_king'])
+    opponent_bitboard = globals.black_pieces_bitboard if opponent_colour == 'black' else globals.white_pieces_bitboard
     attacking_moves = []
     non_attacking_moves = []
     all_moves = find_all_moves()

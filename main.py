@@ -27,10 +27,6 @@ pieces = ['wp', 'wn', 'wb', 'wr', 'wq', 'wk', 'bp', 'bn', 'bb', 'br', 'bq', 'bk'
 for piece in pieces:
     images[piece] = pygame.transform.scale(pygame.image.load(f'images/{piece} copy.png'), (SQUARE_SIZE, SQUARE_SIZE))
 
-def update_game_state(new_state):
-    globals.game_states.append(new_state)
-    if len(globals.game_states) > 3:
-        globals.game_states.pop(0)  # Keep only the last two states
 
 def validate_move(piece, start_index, end_index):
 

@@ -7,6 +7,8 @@ from move_logic import gen_legal_moves
 from globals import save_global_state, restore_global_state
 from debugging_functions import print_binary_as_bitboard
 import numpy as np
+from PST_evaluation import evaluate
+from move_ordering import order_moves
 leaf_node_count = 0
 transposition_table = {}
 quiescence_transposition_table = {}
@@ -40,13 +42,14 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
 
     if depth == 0:
         leaf_node_count += 1
-        return quiescence_search(alpha, beta, maximizing_player, depth, 1), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 10), None
 
     best_move = None
     if maximizing_player:
         captures, non_captures = gen_legal_moves()
+        ordered_captures = order_moves(captures)
         max_eval = float('-inf')
-        for move in captures + non_captures:
+        for move in ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             simulate_computer_move(piece, start_index, end_index)
@@ -62,8 +65,9 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
         return max_eval, best_move
     else:
         captures, non_captures = gen_legal_moves()
+        ordered_captures = order_moves(captures)
         min_eval = float('inf')
-        for move in captures + non_captures:
+        for move in ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             simulate_computer_move(piece, start_index, end_index)
@@ -83,6 +87,8 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     global leaf_node_count
     from computer_move import simulate_computer_move
 
+    print(f'depth: {depth}')
+
     # Check quiescence transposition table
     board_hash = hash_board_state()
     if board_hash in quiescence_transposition_table:
@@ -91,7 +97,7 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         return stored_eval
 
     # Evaluate the static position
-    stand_pat = evaluate_position(globals.piece_bitboards, globals.white_pieces_bitboard,
+    stand_pat = evaluate(globals.piece_bitboards, globals.white_pieces_bitboard,
                                   globals.black_pieces_bitboard, maximizing_player,
                                   globals.white_king_has_moved, globals.black_king_has_moved,
                                   globals.white_kingside_rook_has_moved,
@@ -114,9 +120,10 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         if alpha < stand_pat:
             alpha = stand_pat
 
-        captures, _ = gen_legal_moves()  # Generate only capturing moves
+        captures, _ = gen_legal_moves()
+        ordered_captures = order_moves(captures)# Generate only capturing moves
 
-        for move in captures:
+        for move in ordered_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             simulate_computer_move(piece, start_index, end_index)
@@ -137,7 +144,8 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             beta = stand_pat
 
         captures, _ = gen_legal_moves()
-        for move in captures:
+        ordered_captures = order_moves(captures)
+        for move in ordered_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             simulate_computer_move(piece, start_index, end_index)
