@@ -102,3 +102,4 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         transposition_table[board_hash] = (min_eval, depth)
         return min_eval, best_move
 
+'test'
