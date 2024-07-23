@@ -12,55 +12,10 @@ import copy
 from bit_manipulation import *
 from precomputed_tables import BITBOARD_INDEX_TO_CHESS_SQUARE
 from gui import display_draw, display_winner
+from globals import save_global_state, restore_global_state
 
 COLOR_TO_INDEX = {'black': 0, 'white': 1}
 empty_bitboard = np.uint64(0)
-
-
-def calculate_knight_moves(index):
-    knight_position_bitboard = np.uint64(1) << index
-
-    # this mask will create a bitboard which has all 0s in columns A and B:
-    # this will be used to avoid kight moves which can 'wrap around' to the wrong side of the board
-    mask_col_AB = ~(COLUMNS[column['A']] | COLUMNS[column['B']])
-
-
-    # mask for columns H and G
-    mask_col_HG = ~(COLUMNS[column['H']] | COLUMNS[column['G']])
-
-    # mask for column A
-    mask_col_A = ~COLUMNS[column['A']]
-
-    # mask for column H
-    mask_col_H = ~(COLUMNS[column['H']])
-
-    # move 1: 2 squares right, 1 square north
-    move_1 = (knight_position_bitboard & mask_col_AB) << np.uint8(6) # if the knight is on column A or B move 1 is not possible
-
-    # move 2: 2 squares north, 1 square right
-    move_2 = (knight_position_bitboard & mask_col_A) << np.uint8(15) # move not possible if knight is on column A
-
-    # move 3: 2 squares north, 1 square left
-    move_3 = (knight_position_bitboard & mask_col_H) << np.uint8(17) # move is not possible if the knight is on column H
-
-    # move 4: 2 squares left, 1 square north
-    move_4 = (knight_position_bitboard & mask_col_HG) << np.uint8(10)
-
-    # move_5: 2 squares left, 1 square south
-    move_5 = (knight_position_bitboard & mask_col_HG) >> np.uint8(6)
-
-    # move_6: 2 squares south, 1 square left
-    move_6 = (knight_position_bitboard & mask_col_H) >> np.uint8(15)
-
-    # move_7: 2 squares south, 1 square right
-    move_7 = (knight_position_bitboard & mask_col_A) >> np.uint8(17)
-
-    # move_8: 1 square south, 2 squares right
-    move_8 = (knight_position_bitboard & mask_col_AB) >> np.uint8(10)
-
-    knight_moves = move_1 | move_2 | move_3 | move_4 | move_5 | move_6 | move_7 | move_8
-
-    return knight_moves
 
 
 def generate_knight_moves(index, board, player_turn):
@@ -465,31 +420,22 @@ def simulate_move(piece, start_index, end_index, piece_bitboards, all_pieces_bit
 def get_queen_moves(square, board, player_turn):
     return generate_rook_moves(square, board, player_turn) | generate_bishop_moves(square, board, player_turn)
 
-def results_in_check(piece, start_index, end_index, board, player_turn):
-    white_pieces_bitboard = board['white_pawn'] | board['white_knight'] | board['white_bishop'] | board['white_rook'] | \
-                          board['white_queen'] | board['white_king']
-    black_pieces_bitboard = board['black_pawn'] | board['black_knight'] | \
-                          board['black_bishop'] | board['black_rook'] | board['black_queen'] | board['black_king']
-    all_pieces_bitboard = white_pieces_bitboard | black_pieces_bitboard
+def results_in_check(piece, start_index, end_index):
 
-    board_copy = copy.deepcopy(board)
-    white_pieces_bitboard_copy = copy.deepcopy(white_pieces_bitboard)
-    black_pieces_bitboard_copy = copy.deepcopy(black_pieces_bitboard)
-    all_pieces_bitboard_copy = copy.deepcopy(all_pieces_bitboard)
-    player_turn_copy = copy.deepcopy(player_turn)
-
-    result = simulate_move(piece, start_index, end_index, board_copy, all_pieces_bitboard_copy, player_turn_copy, white_pieces_bitboard_copy, black_pieces_bitboard_copy)
+    saved_state = save_global_state()
+    result = simulate_move(piece, start_index, end_index, globals.piece_bitboards, globals.all_pieces_bitboard, globals.player_turn, globals.white_pieces_bitboard, globals.black_pieces_bitboard)
+    restore_global_state(saved_state)
     all_pieces_bitboard, white_pieces_bitboard, black_pieces_bitboard, piece_bitboards = result
-    player_index = COLOR_TO_INDEX[player_turn]
-    opponent_colour = 'white' if player_turn == 'black' else 'black'
-    king_square_index = find_msb_index(piece_bitboards[f'{player_turn}_king'])
+    player_index = COLOR_TO_INDEX[globals.player_turn]
+    opponent_colour = 'white' if globals.player_turn == 'black' else 'black'
+    king_square_index = find_msb_index(piece_bitboards[f'{globals.player_turn}_king'])
 
     opponent_pawn_bitboard = piece_bitboards[f'{opponent_colour}_pawn']
     if (precomputed_tables.PAWN_ATTACKS[player_index][king_square_index] & opponent_pawn_bitboard) != empty_bitboard:
         return True
 
     opponent_knight_bitboard = piece_bitboards[f'{opponent_colour}_knight']
-    if (generate_knight_moves(king_square_index, piece_bitboards, player_turn) & opponent_knight_bitboard) != empty_bitboard:
+    if (generate_knight_moves(king_square_index, piece_bitboards, globals.player_turn) & opponent_knight_bitboard) != empty_bitboard:
         return True
 
     opponent_king_bitboard = piece_bitboards[f'{opponent_colour}_king']
@@ -498,11 +444,11 @@ def results_in_check(piece, start_index, end_index, board, player_turn):
 
     opponent_bishops_bitboard = piece_bitboards[f'{opponent_colour}_bishop']
     opponent_queens_bitboard = piece_bitboards[f'{opponent_colour}_queen']
-    if (generate_bishop_moves(king_square_index, piece_bitboards, player_turn) & (opponent_bishops_bitboard | opponent_queens_bitboard)) != empty_bitboard:
+    if (generate_bishop_moves(king_square_index, piece_bitboards, globals.player_turn) & (opponent_bishops_bitboard | opponent_queens_bitboard)) != empty_bitboard:
         return True
 
     opponent_rooks_bitboard = piece_bitboards[f'{opponent_colour}_rook']
-    if (generate_rook_moves(king_square_index, piece_bitboards, player_turn) & (opponent_rooks_bitboard | opponent_queens_bitboard)) != empty_bitboard:
+    if (generate_rook_moves(king_square_index, piece_bitboards, globals.player_turn) & (opponent_rooks_bitboard | opponent_queens_bitboard)) != empty_bitboard:
         return True
 
     return False
@@ -598,7 +544,7 @@ def gen_legal_moves():
     all_moves = find_all_moves()
     for move in all_moves:
         piece, starting_square, target_square = move[0], move[1], move[2]
-        if not results_in_check(piece, starting_square, target_square, globals.piece_bitboards, globals.player_turn):
+        if not results_in_check(piece, starting_square, target_square):
             if np.uint64(1) << target_square & opponent_bitboard:
                 attacking_moves.append(move)
             else:

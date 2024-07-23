@@ -136,7 +136,7 @@ def handle_move(piece, start_index, end_index):
 
     from move_logic import results_in_check
 
-    if results_in_check(piece, start_index, end_index, globals.piece_bitboards, globals.player_turn):
+    if results_in_check(piece, start_index, end_index):
         return None
 
     if piece == 'white_pawn' and (start_index == end_index - 9 or start_index == end_index - 7) and not (globals.all_pieces_bitboard >> end_index) & 1:
