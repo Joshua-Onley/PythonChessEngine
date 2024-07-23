@@ -13,6 +13,7 @@ white_kingside_rook_has_moved = False
 black_kingside_rook_has_moved = False
 white_queenside_rook_has_moved = False
 black_queenside_rook_has_moved = False
+half_move_counter = 0
 
 piece_bitboards = {
     'white_pawn': np.uint64(0x000000000000FF00),

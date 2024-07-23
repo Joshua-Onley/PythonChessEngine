@@ -8,6 +8,7 @@ from globals import save_global_state, restore_global_state
 from debugging_functions import print_binary_as_bitboard, print_binary_as_chessboard
 import numpy as np
 from move_ordering import order_moves
+from PST_evaluation import evaluate
 
 
 leaf_node_count = 0
@@ -44,7 +45,7 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
 
     if depth == 0:
         leaf_node_count += 1
-        eval = evaluate_position(globals.piece_bitboards, globals.white_pieces_bitboard,
+        eval = evaluate(globals.piece_bitboards, globals.white_pieces_bitboard,
                                  globals.black_pieces_bitboard, maximizing_player,
                                  globals.white_king_has_moved, globals.black_king_has_moved,
                                  globals.white_kingside_rook_has_moved,

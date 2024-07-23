@@ -286,6 +286,7 @@ def main():
             pygame.display.flip()
             from alpha_beta_minimax import leaf_node_count
             alpha_beta_minimax.leaf_node_count = 0  # Reset count for the next move
+            globals.half_move_counter += 1
             globals.player_turn = 'white'
 
         for event in pygame.event.get():
@@ -326,6 +327,7 @@ def main():
                                 pygame.display.flip()
                                 selected_piece = None
                                 piece = None
+                                globals.half_move_counter += 1
                                 globals.player_turn = 'black'
                             else:
                                 print("Invalid move for white.")
