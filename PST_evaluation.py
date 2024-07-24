@@ -16,10 +16,13 @@ piece_value_dictionary = {
 def determine_game_phase():
     number_of_pieces = len(list(occupied_squares(globals.all_pieces_bitboard)))
     if number_of_pieces > 25:
+        print('opening')
         return OPENING
     elif number_of_pieces > 12:
+        print('middlegame')
         return MIDDLEGAME
     else:
+        print('endgame')
         return ENDGAME
 
 
@@ -51,12 +54,12 @@ def evaluate(piece_bitboards, white_pieces_bitboard,
 
         # Add piece values and piece-square table values for white pieces
         for sq in white_pieces:
-            eval_score += PIECE_SQUARE_TABLES[piece_type][phase][sq]
+            eval_score += PIECE_SQUARE_TABLES[piece_type][phase][63 - sq]
             eval_score += piece_value_dictionary[white_piece_key]
 
         # Subtract piece values and piece-square table values for black pieces
         for sq in black_pieces:
-            eval_score -= PIECE_SQUARE_TABLES[piece_type][phase][63 - sq]
+            eval_score -= PIECE_SQUARE_TABLES[piece_type][phase][sq]
             eval_score -= piece_value_dictionary[black_piece_key]
 
     return eval_score

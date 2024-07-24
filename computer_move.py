@@ -14,13 +14,11 @@ def make_computer_move(colour):
     from alpha_beta_minimax import alpha_beta_minimax
     from quiescence_minimax import alpha_beta_quiescence_minimax
 
-    depth = 3
+    depth = 2
     if colour == 'black':
         min_eval, best_move = alpha_beta_quiescence_minimax(depth, False, float('-inf'), float('inf'))
     else:
         min_eval, best_move = alpha_beta_quiescence_minimax(depth, True, float('-inf'), float('inf'))
-
-
     if best_move:
         piece, start_index, end_index = best_move
         make_best_move(piece, start_index, end_index)
@@ -59,6 +57,8 @@ def make_best_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 7)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 5)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 7)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 5)
         globals.white_king_has_moved = True
 
     elif piece == 'white_king' and start_index == 4 and end_index == 2:
@@ -66,6 +66,8 @@ def make_best_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 0)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 3)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 0)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 3)
         globals.white_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 62:
@@ -73,6 +75,8 @@ def make_best_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 63)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 61)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 63)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 61)
         globals.black_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 58:
@@ -80,6 +84,8 @@ def make_best_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 56)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 59)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 56)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 59)
         globals.black_king_has_moved = True
 
     elif piece == 'white_king':
@@ -95,22 +101,22 @@ def make_best_move(piece, start_index, end_index):
     elif piece == 'white_rook' and start_index == 0:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_kingside_rook_has_moved = True
+        globals.white_queenside_rook_has_moved = True
 
     elif piece == 'white_rook' and start_index == 7:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_queenside_rook_has_moved = True
+        globals.white_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 63:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_queenside_rook_has_moved = True
+        globals.black_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 56:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_kingside_rook_has_moved = True
+        globals.black_queenside_rook_has_moved = True
 
 
     else:
@@ -121,14 +127,18 @@ def make_best_move(piece, start_index, end_index):
     globals.all_pieces_bitboard = set_square(globals.all_pieces_bitboard, end_index)
 
     if piece.startswith('white'):
-        white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
-        globals.white_pieces_bitboard = set_square(white_pieces_bitboard, end_index)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, end_index)
     else:
-        black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
-        globals.black_pieces_bitboard = set_square(black_pieces_bitboard, end_index)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, end_index)
 
     if target_piece:
         globals.piece_bitboards[target_piece] = clear_square(globals.piece_bitboards[target_piece], end_index)
+        if target_piece.startswith('white'):
+            globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, end_index)
+        elif target_piece.startswith('black'):
+            globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index)
 
     globals.game_states.append(globals.piece_bitboards)
 
@@ -160,6 +170,8 @@ def simulate_computer_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 7)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 5)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 7)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 5)
         globals.white_king_has_moved = True
 
     elif piece == 'white_king' and start_index == 4 and end_index == 2:
@@ -167,6 +179,8 @@ def simulate_computer_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 0)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 3)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 0)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 3)
         globals.white_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 62:
@@ -174,6 +188,8 @@ def simulate_computer_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 63)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 61)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 63)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 61)
         globals.black_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 58:
@@ -181,6 +197,8 @@ def simulate_computer_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 56)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 59)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 56)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 59)
         globals.black_king_has_moved = True
 
     elif piece == 'white_king':
@@ -196,22 +214,22 @@ def simulate_computer_move(piece, start_index, end_index):
     elif piece == 'white_rook' and start_index == 0:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_kingside_rook_has_moved = True
+        globals.white_queenside_rook_has_moved = True
 
     elif piece == 'white_rook' and start_index == 7:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_queenside_rook_has_moved = True
+        globals.white_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 63:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_queenside_rook_has_moved = True
+        globals.black_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 56:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_kingside_rook_has_moved = True
+        globals.black_queenside_rook_has_moved = True
 
 
     else:
@@ -222,14 +240,18 @@ def simulate_computer_move(piece, start_index, end_index):
     globals.all_pieces_bitboard = set_square(globals.all_pieces_bitboard, end_index)
 
     if piece.startswith('white'):
-        white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
-        globals.white_pieces_bitboard = set_square(white_pieces_bitboard, end_index)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, end_index)
     else:
-        black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
-        globals.black_pieces_bitboard = set_square(black_pieces_bitboard, end_index)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, end_index)
 
     if target_piece:
         globals.piece_bitboards[target_piece] = clear_square(globals.piece_bitboards[target_piece], end_index)
+        if target_piece.startswith('white'):
+            globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, end_index)
+        elif target_piece.startswith('black'):
+            globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index)
 
     globals.game_states.append(globals.piece_bitboards)
     switch_player_turn()

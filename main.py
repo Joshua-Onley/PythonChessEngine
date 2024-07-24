@@ -33,7 +33,7 @@ def validate_move(piece, start_index, end_index):
     from move_logic import is_en_passant_legal
 
     if piece == 'white_knight' or piece == 'black_knight':
-        potential_moves = generate_knight_moves(start_index, globals.piece_bitboards, globals.player_turn)
+        potential_moves = generate_knight_moves(start_index)
 
 
         if (potential_moves >> end_index) & 1:
@@ -42,7 +42,7 @@ def validate_move(piece, start_index, end_index):
             return False
 
     if piece == 'white_king' or piece == 'black_king':
-        potential_moves = generate_king_moves_bitboard(start_index, globals.piece_bitboards, globals.white_king_has_moved, globals.black_king_has_moved, globals.white_kingside_rook_has_moved, globals.white_kingside_rook_has_moved, globals.black_kingside_rook_has_moved, globals.black_queenside_rook_has_moved, globals.player_turn)
+        potential_moves = generate_king_moves_bitboard(start_index)
 
 
         if (potential_moves >> end_index) & 1:
@@ -51,9 +51,9 @@ def validate_move(piece, start_index, end_index):
             return False
 
     if piece == 'white_pawn' or piece == 'black_pawn':
-        potential_moves = generate_pawn_moves(start_index, globals.piece_bitboards)
+        potential_moves = generate_pawn_moves(start_index)
         if len(globals.game_states) > 2:
-            en_passant_moves = is_en_passant_legal(globals.piece_bitboards, globals.player_turn, globals.game_states)
+            en_passant_moves = is_en_passant_legal()
             if en_passant_moves:
                 potential_moves = potential_moves | en_passant_moves
 
@@ -63,7 +63,7 @@ def validate_move(piece, start_index, end_index):
             return False
 
     if piece == 'white_bishop' or piece == 'black_bishop':
-        potential_moves = generate_bishop_moves(start_index, globals.piece_bitboards, globals.player_turn)
+        potential_moves = generate_bishop_moves(start_index)
 
         if (potential_moves >> end_index) & 1:
             return True
@@ -71,17 +71,17 @@ def validate_move(piece, start_index, end_index):
             return False
 
     if piece == 'white_rook' or piece == 'black_rook':
-        potential_moves = generate_rook_moves(start_index, globals.piece_bitboards, globals.player_turn)
+        potential_moves = generate_rook_moves(start_index)
 
-        if (potential_moves >> end_index) & 1:
+        if (potential_moves >> end_index) & 1 == 1:
             return True
         else:
             return False
 
     if piece == 'white_queen' or piece == 'black_queen':
-        potential_moves = generate_rook_moves(start_index, globals.piece_bitboards, globals.player_turn) | generate_bishop_moves(start_index, globals.piece_bitboards, globals.player_turn)
+        potential_moves = generate_rook_moves(start_index) | generate_bishop_moves(start_index)
 
-        if (potential_moves >> end_index) & 1:
+        if (potential_moves >> end_index) & 1 == 1:
             return True
         else:
             return False
@@ -158,6 +158,8 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 7)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 5)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 7)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 5)
         globals.white_king_has_moved = True
 
     elif piece == 'white_king' and start_index == 4 and end_index == 2:
@@ -165,6 +167,8 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['white_king'] = set_square(globals.piece_bitboards['white_king'], end_index)
         globals.piece_bitboards['white_rook'] = clear_square(globals.piece_bitboards['white_rook'], 0)
         globals.piece_bitboards['white_rook'] = set_square(globals.piece_bitboards['white_rook'], 3)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, 0)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, 3)
         globals.white_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 62:
@@ -172,6 +176,8 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 63)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 61)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 63)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 61)
         globals.black_king_has_moved = True
 
     elif piece == 'black_king' and start_index == 60 and end_index == 58:
@@ -179,6 +185,8 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['black_king'] = set_square(globals.piece_bitboards['black_king'], end_index)
         globals.piece_bitboards['black_rook'] = clear_square(globals.piece_bitboards['black_rook'], 56)
         globals.piece_bitboards['black_rook'] = set_square(globals.piece_bitboards['black_rook'], 59)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, 56)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, 59)
         globals.black_king_has_moved = True
 
     elif piece == 'white_king':
@@ -194,22 +202,22 @@ def handle_move(piece, start_index, end_index):
     elif piece == 'white_rook' and start_index == 0:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_kingside_rook_has_moved = True
+        globals.white_queenside_rook_has_moved = True
 
     elif piece == 'white_rook' and start_index == 7:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.white_queenside_rook_has_moved = True
+        globals.white_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 63:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_queenside_rook_has_moved = True
+        globals.black_kingside_rook_has_moved = True
 
     elif piece == 'black_rook' and start_index == 56:
         globals.piece_bitboards[piece] = clear_square(globals.piece_bitboards[piece], start_index)
         globals.piece_bitboards[piece] = set_square(globals.piece_bitboards[piece], end_index)
-        globals.black_kingside_rook_has_moved = True
+        globals.black_queenside_rook_has_moved = True
 
 
     else:
@@ -220,14 +228,18 @@ def handle_move(piece, start_index, end_index):
     globals.all_pieces_bitboard = set_square(globals.all_pieces_bitboard, end_index)
 
     if piece.startswith('white'):
-        white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
-        globals.white_pieces_bitboard = set_square(white_pieces_bitboard, end_index)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, start_index)
+        globals.white_pieces_bitboard = set_square(globals.white_pieces_bitboard, end_index)
     else:
-        black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
-        globals.black_pieces_bitboard = set_square(black_pieces_bitboard, end_index)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, start_index)
+        globals.black_pieces_bitboard = set_square(globals.black_pieces_bitboard, end_index)
 
     if target_piece:
         globals.piece_bitboards[target_piece] = clear_square(globals.piece_bitboards[target_piece], end_index)
+        if target_piece.startswith('white'):
+            globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, end_index)
+        elif target_piece.startswith('black'):
+            globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index)
 
     globals.game_states.append(globals.piece_bitboards)
     globals.player_turn = 'black' if globals.player_turn == 'white' else 'white'
