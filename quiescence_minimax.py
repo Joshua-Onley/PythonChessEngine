@@ -79,22 +79,17 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     global leaf_node_evaluations_retrieved_from_transposition_table
     from computer_move import simulate_computer_move
 
-    # Check quiescence transposition table
     board_hash = hash_board_state()
     if board_hash in quiescence_transposition_table:
         stored_eval = quiescence_transposition_table[board_hash]
         leaf_node_evaluations_retrieved_from_transposition_table += 1
         return stored_eval
 
-    # Evaluate the static position
     stand_pat = evaluate(globals.piece_bitboards)
 
-    # Increment leaf node count when we evaluate a position
     leaf_node_count += 1
 
-    # Return the static evaluation if the maximum depth is reached
     if depth >= max_depth:
-        print('maximim quiescence depth reached ##############')
         return stand_pat
 
     if maximizing_player:
@@ -105,7 +100,7 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             alpha = stand_pat
 
         captures, _ = gen_legal_moves()
-        ordered_captures = order_moves(captures)# Generate only capturing moves
+        ordered_captures = order_moves(captures)
 
         for move in ordered_captures:
             piece, start_index, end_index = move
