@@ -14,9 +14,13 @@ def make_computer_move(colour):
     from alpha_beta_minimax import alpha_beta_minimax
     from quiescence_minimax import alpha_beta_quiescence_minimax
 
-    depth = 2
+    depth = 3
     if colour == 'black':
+        start_time = time.time()
         min_eval, best_move = alpha_beta_quiescence_minimax(depth, False, float('-inf'), float('inf'))
+        end_time = time.time()
+        time_taken = end_time - start_time
+        print(f'time taken: {time_taken}')
     else:
         min_eval, best_move = alpha_beta_quiescence_minimax(depth, True, float('-inf'), float('inf'))
     if best_move:
@@ -26,7 +30,7 @@ def make_computer_move(colour):
         globals.player_turn = 'white'
     else:
         checkmate('white')
-        pygame.quit()
+
 
 
 

@@ -1,5 +1,7 @@
 import numpy as np
 
+np.seterr(over='ignore')
+
 debruijn = np.uint64(0x03f79d71b4cb0a89)
 empty_bitboard = np.uint64(0)
 
@@ -62,9 +64,8 @@ def retrieve_occupied_squares(bitboard):
             occupied.append(index)
     return occupied
 
+import numpy as np
+
 def pop_count(bitboard):
-    count = np.uint8(0)
-    while bitboard != empty_bitboard:
-        count += np.uint8(1)
-        bitboard &= bitboard - np.uint64(1)
-    return count
+    return np.uint8(np.binary_repr(bitboard).count('1'))
+

@@ -12,13 +12,13 @@ def calculate_bishop_mobility_bonus(board):
     # calculate white bishop mobility bonus
     white_bishop_indexes = occupied_squares(board['white_bishop'])
     for index in white_bishop_indexes:
-        moves_bitboard = generate_bishop_moves(index, board, 'white')
+        moves_bitboard = generate_bishop_moves(index)
         white_bonus += pop_count(moves_bitboard) * 4
 
     # calculate black bishop mobility bonus
     black_bishop_indexes = occupied_squares(board['black_bishop'])
     for index in black_bishop_indexes:
-        moves_bitboard = generate_bishop_moves(index, board, 'black')
+        moves_bitboard = generate_bishop_moves(index)
         black_bonus += pop_count(moves_bitboard) * 4
 
     return white_bonus, black_bonus
@@ -30,7 +30,7 @@ def calculate_knight_bonuses(board):
 
     def mobility_bonus(knight_index, board, player_turn):
         bonus = 0
-        moves_bitboard = generate_knight_moves(knight_index, board, player_turn)
+        moves_bitboard = generate_knight_moves(knight_index)
         bonus += pop_count(moves_bitboard) * 5
         return bonus
 
@@ -110,7 +110,7 @@ def calculate_rook_bonuses(board, white_pieces, black_pieces, all_pieces_bitboar
     def rook_mobility_bonus(index, board, player_turn):
         bonus = 0
 
-        moves_bitboard = generate_rook_moves(index, board, player_turn)
+        moves_bitboard = generate_rook_moves(index)
         bonus += pop_count(moves_bitboard) * 4
         number_of_moves = pop_count(moves_bitboard)
         return bonus

@@ -10,7 +10,7 @@ import numpy as np
 from PST_evaluation import evaluate
 from move_ordering import order_moves
 leaf_node_count = 0
-transposition_table = {}
+leaf_node_evaluations_retrieved_from_transposition_table = 0
 quiescence_transposition_table = {}
 
 def hash_board_state():
@@ -34,14 +34,7 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
     from computer_move import simulate_computer_move
 
-    board_hash = hash_board_state()
-    if board_hash in transposition_table:
-        stored_eval, stored_depth = transposition_table[board_hash]
-        if stored_depth >= depth:
-            return stored_eval, None
-
     if depth == 0:
-        leaf_node_count += 1
         return quiescence_search(alpha, beta, maximizing_player, depth, 5), None
 
     best_move = None
@@ -61,7 +54,6 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
-        transposition_table[board_hash] = (max_eval, depth)
         return max_eval, best_move
     else:
         captures, non_captures = gen_legal_moves()
@@ -79,31 +71,23 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
             beta = min(beta, eval)
             if beta <= alpha:
                 break
-        transposition_table[board_hash] = (min_eval, depth)
         return min_eval, best_move
 
 
 def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     global leaf_node_count
+    global leaf_node_evaluations_retrieved_from_transposition_table
     from computer_move import simulate_computer_move
-
-    print(f'depth: {depth}')
 
     # Check quiescence transposition table
     board_hash = hash_board_state()
     if board_hash in quiescence_transposition_table:
-        print('this position was stored in the quiescence transposition table')
         stored_eval = quiescence_transposition_table[board_hash]
+        leaf_node_evaluations_retrieved_from_transposition_table += 1
         return stored_eval
 
     # Evaluate the static position
-    stand_pat = evaluate(globals.piece_bitboards, globals.white_pieces_bitboard,
-                                  globals.black_pieces_bitboard, maximizing_player,
-                                  globals.white_king_has_moved, globals.black_king_has_moved,
-                                  globals.white_kingside_rook_has_moved,
-                                  globals.white_queenside_rook_has_moved,
-                                  globals.black_kingside_rook_has_moved,
-                                  globals.black_queenside_rook_has_moved, globals.game_states)
+    stand_pat = evaluate(globals.piece_bitboards)
 
     # Increment leaf node count when we evaluate a position
     leaf_node_count += 1

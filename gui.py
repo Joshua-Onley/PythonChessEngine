@@ -41,7 +41,7 @@ def display_winner(winner):
     WIN.blit(text_surface, text_rect)
     pygame.display.flip()
     pygame.time.delay(5000)
-    pygame.quit()
+
 
 def display_draw():
     font = pygame.font.SysFont(None, 200)

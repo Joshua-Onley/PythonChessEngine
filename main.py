@@ -1,13 +1,14 @@
 import pygame
 from move_logic import generate_pawn_moves, generate_bishop_moves, generate_rook_moves, generate_king_moves, generate_knight_moves, gen_legal_moves, generate_king_moves_bitboard
 from precomputed_tables import BITBOARD_INDEX_TO_CHESS_SQUARE
-from gui import draw_board_from_bitboards
+from gui import draw_board_from_bitboards, display_winner
 import globals
 from bit_manipulation import clear_square, set_square
 import cProfile
 import pstats
 import io
 import alpha_beta_minimax
+import quiescence_minimax
 
 
 pygame.init()
@@ -115,8 +116,8 @@ def determine_what_piece_has_been_selected(index, board):
         return 'black_king'
 
 def handle_move(piece, start_index, end_index):
-
     from move_logic import gen_legal_moves
+
 
     target_piece = determine_what_piece_has_been_selected(end_index, globals.piece_bitboards)
 
@@ -292,10 +293,13 @@ def main():
                                       globals.piece_bitboards['black_queen'], globals.piece_bitboards['black_king'],
                                       images)
             pygame.display.flip()
-            from alpha_beta_minimax import leaf_node_count
-            alpha_beta_minimax.leaf_node_count = 0  # Reset count for the next move
+
+            from quiescence_minimax import leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table
+            print(f'leaf node count: {leaf_node_count}, retrieved evaluations: {leaf_node_evaluations_retrieved_from_transposition_table}')
+            quiescence_minimax.leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table = 0, 0  # Reset count for the next move
             globals.half_move_counter += 1
             globals.player_turn = 'white'
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -308,6 +312,9 @@ def main():
                 index = row * 8 + col
 
                 if globals.player_turn == 'white':
+                    legal_moves = gen_legal_moves()
+                    if len(legal_moves[0]) == 0 and len(legal_moves[1]) == 0:
+                            display_winner('black')
                     if not piece_selected:
                         if handle_piece_selection(index):
                             selected_piece = index
