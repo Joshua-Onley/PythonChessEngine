@@ -3,8 +3,8 @@ import globals
 minimax_call_count = 0
 
 from hand_crafted_evaluation import evaluate_position
-from move_logic import gen_legal_moves
-from globals import save_global_state, restore_global_state
+from move_logic import gen_legal_moves, make_move
+from globals import save_global_state, restore_global_state, switch_player_turn
 from debugging_functions import print_binary_as_bitboard, print_binary_as_chessboard
 import numpy as np
 from move_ordering import order_moves
@@ -35,7 +35,6 @@ def hash_board_state():
 def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
     global leaf_node_evaluations_retrieved_from_transposition_table
-    from computer_move import simulate_computer_move
 
     # Check the transposition table
     board_hash = hash_board_state()
@@ -58,7 +57,8 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         for move in ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
-            simulate_computer_move(piece, start_index, end_index)
+            make_move(piece, start_index, end_index)
+            switch_player_turn()
             eval, _ = alpha_beta_minimax(depth - 1, False, alpha, beta)
             if eval > max_eval:
                 max_eval = eval
@@ -76,7 +76,8 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         for move in ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
-            simulate_computer_move(piece, start_index, end_index)
+            make_move(piece, start_index, end_index)
+            switch_player_turn()
             eval, _ = alpha_beta_minimax(depth - 1, True, alpha, beta)
             if eval < min_eval:
                 min_eval = eval
