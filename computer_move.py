@@ -14,7 +14,7 @@ def make_computer_move(colour):
     from alpha_beta_minimax import alpha_beta_minimax
     from quiescence_minimax import alpha_beta_quiescence_minimax
 
-    depth = 3
+    depth = 2
     if colour == 'black':
         start_time = time.time()
         min_eval, best_move = alpha_beta_quiescence_minimax(depth, False, float('-inf'), float('inf'))

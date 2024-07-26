@@ -35,7 +35,7 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     from computer_move import simulate_computer_move
 
     if depth == 0:
-        return quiescence_search(alpha, beta, maximizing_player, depth, 5), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 20), None
 
     best_move = None
     if maximizing_player:
@@ -83,10 +83,10 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     if board_hash in quiescence_transposition_table:
         stored_eval = quiescence_transposition_table[board_hash]
         leaf_node_evaluations_retrieved_from_transposition_table += 1
+        leaf_node_count += 1
         return stored_eval
 
     stand_pat = evaluate(globals.piece_bitboards)
-
     leaf_node_count += 1
 
     if depth >= max_depth:

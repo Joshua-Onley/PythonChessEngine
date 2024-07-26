@@ -10,9 +10,10 @@ import numpy as np
 from move_ordering import order_moves
 from PST_evaluation import evaluate
 
-
+leaf_node_evaluations_retrieved_from_transposition_table = 0
 leaf_node_count = 0
 transposition_table = {}
+
 
 def hash_board_state():
 
@@ -33,34 +34,24 @@ def hash_board_state():
 
 def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
+    global leaf_node_evaluations_retrieved_from_transposition_table
     from computer_move import simulate_computer_move
 
     # Check the transposition table
     board_hash = hash_board_state()
     if board_hash in transposition_table:
+        leaf_node_evaluations_retrieved_from_transposition_table += 1
         stored_eval, stored_depth = transposition_table[board_hash]
         if stored_depth >= depth:
-            print('this position was stored in the transposition table')
             return stored_eval, None
 
     if depth == 0:
         leaf_node_count += 1
-        eval = evaluate(globals.piece_bitboards, globals.white_pieces_bitboard,
-                                 globals.black_pieces_bitboard, maximizing_player,
-                                 globals.white_king_has_moved, globals.black_king_has_moved,
-                                 globals.white_kingside_rook_has_moved,
-                                 globals.white_queenside_rook_has_moved,
-                                 globals.black_kingside_rook_has_moved,
-                                 globals.black_queenside_rook_has_moved, globals.game_states)
+        eval = evaluate(globals.piece_bitboards)
         return eval, None
 
     best_move = None
     if maximizing_player:
-        print('all pieces bitboard')
-        print_binary_as_chessboard(globals.all_pieces_bitboard)
-        print('\n')
-        print('pawns bitboards')
-        print_binary_as_chessboard(globals.piece_bitboards['white_pawn'] | globals.piece_bitboards['black_pawn'])
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         max_eval = float('-inf')
@@ -79,12 +70,6 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         transposition_table[board_hash] = (max_eval, depth)
         return max_eval, best_move
     else:
-        print('all pieces bitboard')
-        print_binary_as_chessboard(globals.all_pieces_bitboard)
-        print('\n')
-        print('pawns bitboards')
-        print_binary_as_chessboard(globals.piece_bitboards['white_pawn'] | globals.piece_bitboards['black_pawn'])
-        print('\n')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         min_eval = float('inf')

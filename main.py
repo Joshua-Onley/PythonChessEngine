@@ -295,7 +295,8 @@ def main():
             pygame.display.flip()
 
             from quiescence_minimax import leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table
-            print(f'leaf node count: {leaf_node_count}, retrieved evaluations: {leaf_node_evaluations_retrieved_from_transposition_table}')
+            # from alpha_beta_minimax import leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table
+            print(f'leaf nodes evaluated: {leaf_node_count}, leaf node evaluations retrieved from transposition table: : {leaf_node_evaluations_retrieved_from_transposition_table}')
             quiescence_minimax.leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table = 0, 0  # Reset count for the next move
             globals.half_move_counter += 1
             globals.player_turn = 'white'
