@@ -33,7 +33,7 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
 
     if depth == 0:
-        return quiescence_search(alpha, beta, maximizing_player, depth, 10), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 25), None
 
     best_move = None
     if maximizing_player:
