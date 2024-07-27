@@ -202,6 +202,10 @@ def main():
             print(f'leaf nodes evaluated: {leaf_node_count}, leaf node evaluations retrieved from transposition table: : {leaf_node_evaluations_retrieved_from_transposition_table}')
             quiescence_minimax.leaf_node_count, leaf_node_evaluations_retrieved_from_transposition_table = 0, 0  # Reset count for the next move
             globals.half_move_counter += 1
+            print(f'half move count: {globals.half_move_counter}')
+            print(f'length of game states: {len(globals.game_states)}')
+            print(f'game states: {globals.game_states}')
+            print('\n\n\n\n\n\n\n\n\n')
             globals.player_turn = 'white'
 
 

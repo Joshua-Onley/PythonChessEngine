@@ -39,7 +39,6 @@ def find_msb_index(bitboard):
     bitboard |= bitboard >> np.uint8(32)
     return msb_lookup[(bitboard * debruijn) >> np.uint8(58)]
 
-
 def clear_square(bitboard, square_index):
     index_bitboard = to_bitboard(square_index)
     return (~index_bitboard) & bitboard
@@ -56,15 +55,6 @@ def occupied_squares(bitboard):
         lsb_square = find_lsb_index(bitboard)
         yield lsb_square
         bitboard ^= to_bitboard(lsb_square)
-
-def retrieve_occupied_squares(bitboard):
-    occupied = []
-    for index in range(64):
-        if bitboard & (1 << index):
-            occupied.append(index)
-    return occupied
-
-import numpy as np
 
 def pop_count(bitboard):
     return np.uint8(np.binary_repr(bitboard).count('1'))
