@@ -51,6 +51,7 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
 
     best_move = None
     if maximizing_player:
+        print('generating legal moves for white')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         max_eval = float('-inf')
@@ -70,6 +71,7 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         transposition_table[board_hash] = (max_eval, depth)
         return max_eval, best_move
     else:
+        print('generating legal moves for black')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         min_eval = float('inf')

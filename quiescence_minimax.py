@@ -32,11 +32,14 @@ def hash_board_state():
 def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
 
+
+
     if depth == 0:
-        return quiescence_search(alpha, beta, maximizing_player, depth, 1), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 15), None
 
     best_move = None
     if maximizing_player:
+        #print('generating legal moves for white...')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         max_eval = float('-inf')
@@ -55,6 +58,7 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
                 break
         return max_eval, best_move
     else:
+        #print('generating legal moves for black...')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         min_eval = float('inf')
@@ -92,14 +96,17 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         return stand_pat
 
     if maximizing_player:
+        #print(f'quiescence search | depth {depth}')
         if stand_pat >= beta:
             quiescence_transposition_table[board_hash] = beta
             return beta
         if alpha < stand_pat:
             alpha = stand_pat
 
+        #print(f'quiescence search generating moves for white...')
         captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
+        #print(f'ordered captures for white: {ordered_captures}')
 
         for move in ordered_captures:
             piece, start_index, end_index = move
@@ -122,8 +129,10 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         if beta > stand_pat:
             beta = stand_pat
 
+        #print(f'quiescence search generating moves for black...')
         captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
+        #print(f'ordered captures for black: {ordered_captures}')
         for move in ordered_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()

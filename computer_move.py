@@ -17,12 +17,12 @@ def make_computer_move(colour):
     depth = 1
     if colour == 'black':
         start_time = time.time()
-        min_eval, best_move = alpha_beta_quiescence_minimax(depth, False, float('-inf'), float('inf'))
+        min_eval, best_move = alpha_beta_minimax(depth, False, float('-inf'), float('inf'))
         end_time = time.time()
         time_taken = end_time - start_time
         print(f'time taken: {time_taken}')
     else:
-        min_eval, best_move = alpha_beta_quiescence_minimax(depth, True, float('-inf'), float('inf'))
+        min_eval, best_move = alpha_beta_minimax(depth, True, float('-inf'), float('inf'))
     if best_move:
         piece, start_index, end_index = best_move
         make_move(piece, start_index, end_index)
