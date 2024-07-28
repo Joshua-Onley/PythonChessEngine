@@ -15,6 +15,7 @@ white_queenside_rook_has_moved = False
 black_queenside_rook_has_moved = False
 half_move_counter = 0
 
+'''
 piece_bitboards = {
     'white_pawn': np.uint64(0x000000000000FF00),
     'white_knight': np.uint64(0x0000000000000042),
@@ -29,6 +30,22 @@ piece_bitboards = {
     'black_queen': np.uint64(0x0800000000000000),
     'black_king': np.uint64(0x1000000000000000)
 }
+'''
+piece_bitboards = {
+'white_pawn': np.uint64(0x000000081000e700),
+'black_pawn': np.uint64(0x002d500002800000),
+'white_knight': np.uint64(0x0000001000040000),
+'black_knight': np.uint64(0x0000220000000000),
+'white_bishop': np.uint64(0x0000000000001800),
+'black_bishop': np.uint64(0x0040010000000000),
+'white_rook': np.uint64(0x0000000000000081),
+'black_rook': np.uint64(0x8100000000000000),
+'white_queen': np.uint64(0x0000000000200000),
+'black_queen': np.uint64(0x0010000000000000),
+'white_king': np.uint64(0x0000000000000010),
+'black_king': np.uint64(0x1000000000000000)
+}
+
 
 # Separate bitboards for white and black pieces
 white_pieces_bitboard = (

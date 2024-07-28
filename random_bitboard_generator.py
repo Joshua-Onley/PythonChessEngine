@@ -3,14 +3,14 @@ from debugging_functions import print_binary_as_bitboard
 
 # Define the initial counts for each piece type
 piece_counts = {
-    'white_pawn': 8,
-    'black_pawn': 8,
-    'white_knight': 2,
+    'white_pawn': 5,
+    'black_pawn': 5,
+    'white_knight': 1,
     'black_knight': 2,
     'white_bishop': 2,
-    'black_bishop': 2,
-    'white_rook': 2,
-    'black_rook': 2,
+    'black_bishop': 1,
+    'white_rook': 1,
+    'black_rook': 1,
     'white_queen': 1,
     'black_queen': 1,
     'white_king': 1,
@@ -32,10 +32,4 @@ for _ in range(100):
         board[piece] = bitboard
     random_positions.append(board)
 
-for idx, board in enumerate(random_positions):
-    print(f"Board {idx + 1}:")
-    for piece, bitboard in board.items():
-        print(f"{piece}:")
-        print_binary_as_bitboard(bitboard)
-        print()
-    print("-" * 40)
+print(random_positions)

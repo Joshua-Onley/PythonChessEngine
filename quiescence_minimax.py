@@ -58,7 +58,6 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
                 break
         return max_eval, best_move
     else:
-        #print('generating legal moves for black...')
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         min_eval = float('inf')

@@ -436,7 +436,9 @@ def gen_legal_moves():
     opponent_bitboard = globals.black_pieces_bitboard if opponent_colour == 'black' else globals.white_pieces_bitboard
     attacking_moves = []
     non_attacking_moves = []
+    legal_moves = []
     all_moves = find_all_moves()
+
     for move in all_moves:
         piece, starting_square, target_square = move
         if not results_in_check(piece, starting_square, target_square):

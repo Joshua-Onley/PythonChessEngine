@@ -23,3 +23,4 @@ def determine_what_piece_has_been_selected(index, board):
         return 'white_king'
     elif (board['black_king'] >> index) & 1 == 1:
         return 'black_king'
+
