@@ -149,7 +149,7 @@ def is_en_passant_legal():
 
                 if (masked_end_square_left & globals.piece_bitboards['white_pawn']) or (
                         masked_end_square_right & globals.piece_bitboards['white_pawn']):
-                    print('en passant is possible ##############################################################')
+
                     return end_square << 8
 
     elif globals.player_turn == 'black':
@@ -166,7 +166,7 @@ def is_en_passant_legal():
 
                 if (masked_end_square_left & globals.piece_bitboards['black_pawn']) or (
                         masked_end_square_right & globals.piece_bitboards['black_pawn']):
-                    print('en passant is possible ############################ \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+
                     return end_square >> 8
 
     return np.uint64(0)

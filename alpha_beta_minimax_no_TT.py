@@ -26,9 +26,10 @@ def alpha_beta_minimax_(depth, maximizing_player, alpha, beta):
     best_move = None
     if maximizing_player:
         captures, non_captures = gen_legal_moves()
-        ordered_captures = order_moves(captures)
+
+
         max_eval = float('-inf')
-        for move in ordered_captures + non_captures:
+        for move in captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
@@ -44,9 +45,9 @@ def alpha_beta_minimax_(depth, maximizing_player, alpha, beta):
         return max_eval, best_move
     else:
         captures, non_captures = gen_legal_moves()
-        ordered_captures = order_moves(captures)
+
         min_eval = float('inf')
-        for move in ordered_captures + non_captures:
+        for move in captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)

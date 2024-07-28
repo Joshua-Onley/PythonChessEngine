@@ -226,7 +226,7 @@ def main():
 
     while running:
         if globals.player_turn == 'black':
-            print(globals.game_states)
+
             make_computer_move('black')
             draw_board_from_bitboards(WIN, globals.piece_bitboards['white_pawn'],
                                       globals.piece_bitboards['white_knight'], globals.piece_bitboards['white_bishop'],
@@ -237,10 +237,8 @@ def main():
                                       globals.piece_bitboards['black_queen'], globals.piece_bitboards['black_king'],
                                       images)
             pygame.display.flip()
-
             globals.half_move_counter += 1
             globals.player_turn = 'white'
-
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -287,8 +285,8 @@ def main():
                                 globals.player_turn = 'black'
                             else:
                                 print("Invalid move for white.")
-
     pygame.quit()
+
 
 def f8_alt(x):
     return "%14.9f" % x

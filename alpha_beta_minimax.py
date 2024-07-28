@@ -52,10 +52,9 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
     best_move = None
     if maximizing_player:
         print('generating legal moves for white')
-        captures, non_captures = gen_legal_moves()
-        ordered_captures = order_moves(captures)
+        legal_moves = gen_legal_moves()
         max_eval = float('-inf')
-        for move in ordered_captures + non_captures:
+        for move in legal_moves:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
@@ -72,10 +71,10 @@ def alpha_beta_minimax(depth, maximizing_player, alpha, beta):
         return max_eval, best_move
     else:
         print('generating legal moves for black')
-        captures, non_captures = gen_legal_moves()
-        ordered_captures = order_moves(captures)
+        legal_moves = gen_legal_moves()
+
         min_eval = float('inf')
-        for move in ordered_captures + non_captures:
+        for move in legal_moves:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)

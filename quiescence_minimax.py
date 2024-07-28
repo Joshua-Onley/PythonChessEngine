@@ -32,14 +32,12 @@ def hash_board_state():
 def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
 
-
-
     if depth == 0:
-        return quiescence_search(alpha, beta, maximizing_player, depth, 15), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 10), None
 
     best_move = None
     if maximizing_player:
-        #print('generating legal moves for white...')
+
         captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         max_eval = float('-inf')
