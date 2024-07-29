@@ -10,6 +10,23 @@ from move_ordering import order_moves
 
 leaf_node_count = 0
 leaf_node_evaluations_retrieved_from_transposition_table = 0
+quiescence_transposition_table = {}
+
+def hash_board_state():
+
+    board_state = (
+        globals.piece_bitboards['white_pawn'], globals.piece_bitboards['white_knight'],
+        globals.piece_bitboards['white_bishop'], globals.piece_bitboards['white_rook'],
+        globals.piece_bitboards['white_queen'], globals.piece_bitboards['white_king'],
+        globals.piece_bitboards['black_pawn'], globals.piece_bitboards['black_knight'],
+        globals.piece_bitboards['black_bishop'], globals.piece_bitboards['black_rook'],
+        globals.piece_bitboards['black_queen'], globals.piece_bitboards['black_king'],
+        globals.white_pieces_bitboard, globals.black_pieces_bitboard, globals.all_pieces_bitboard,
+        globals.white_king_has_moved, globals.black_king_has_moved,
+        globals.white_kingside_rook_has_moved, globals.black_kingside_rook_has_moved,
+        globals.white_queenside_rook_has_moved, globals.black_queenside_rook_has_moved
+    )
+    return hash(board_state)
 
 
 def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
@@ -61,7 +78,18 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
 def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     global leaf_node_count
     global leaf_node_evaluations_retrieved_from_transposition_table
+    global quiescence_transposition_table
 
+    board_hash = hash_board_state()
+
+    # Check if the board state is in the transposition table
+    if board_hash in quiescence_transposition_table:
+        stored_eval, stored_depth = quiescence_transposition_table[board_hash]
+        # Only use the stored evaluation if it's from a depth greater than or equal to the current depth
+        if stored_depth >= depth:
+            leaf_node_evaluations_retrieved_from_transposition_table += 1
+            leaf_node_count += 1
+            return stored_eval
 
     stand_pat = evaluate(globals.piece_bitboards)
     leaf_node_count += 1
@@ -72,6 +100,7 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
 
     if maximizing_player:
         if stand_pat >= beta:
+            quiescence_transposition_table[board_hash] = (beta, depth)
             return beta
         if alpha < stand_pat:
             alpha = stand_pat
@@ -87,12 +116,15 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             score = quiescence_search(alpha, beta, False, depth + 1, max_depth)
             restore_global_state(saved_state)
             if score >= beta:
+                quiescence_transposition_table[board_hash] = (beta, depth)
                 return beta
             if score > alpha:
                 alpha = score
+        quiescence_transposition_table[board_hash] = (alpha, depth)
         return alpha
     else:
         if stand_pat <= alpha:
+            quiescence_transposition_table[board_hash] = (alpha, depth)
             return alpha
         if beta > stand_pat:
             beta = stand_pat
@@ -107,7 +139,9 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             score = quiescence_search(alpha, beta, True, depth + 1, max_depth)
             restore_global_state(saved_state)
             if score <= alpha:
+                quiescence_transposition_table[board_hash] = (alpha, depth)
                 return alpha
             if score < beta:
                 beta = score
+        quiescence_transposition_table[board_hash] = (beta, depth)
         return beta

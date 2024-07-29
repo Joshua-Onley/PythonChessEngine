@@ -12,9 +12,6 @@ from PST_evaluation import evaluate
 leaf_node_count = 0
 
 
-
-
-
 def alpha_beta_minimax_(depth, maximizing_player, alpha, beta):
     global leaf_node_count
 

@@ -14,7 +14,6 @@ leaf_node_evaluations_retrieved_from_transposition_table = 0
 leaf_node_count = 0
 transposition_table = {}
 
-
 def hash_board_state():
 
     board_state = (
