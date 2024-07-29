@@ -12,6 +12,11 @@ leaf_node_count = 0
 leaf_node_evaluations_retrieved_from_transposition_table = 0
 quiescence_transposition_table = {}
 
+def has_captures():
+    captures, _ = gen_legal_moves()
+    return len(captures) > 0
+
+
 def hash_board_state():
 
     board_state = (
@@ -85,27 +90,33 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
     # Check if the board state is in the transposition table
     if board_hash in quiescence_transposition_table:
         stored_eval, stored_depth = quiescence_transposition_table[board_hash]
-        # Only use the stored evaluation if it's from a depth greater than or equal to the current depth
+        leaf_node_evaluations_retrieved_from_transposition_table += 1
+        leaf_node_count += 1
+        # Use the stored evaluation if the stored depth is sufficient
         if stored_depth >= depth:
-            leaf_node_evaluations_retrieved_from_transposition_table += 1
-            leaf_node_count += 1
             return stored_eval
 
+    # Stand-pat evaluation
     stand_pat = evaluate(globals.piece_bitboards)
     leaf_node_count += 1
 
-    # If the current depth is greater than or equal to max depth, return the stand-pat evaluation
-    if depth >= max_depth:
+    # If we are at a leaf node (no further captures possible or max depth reached), return the stand-pat evaluation
+    captures, _ = gen_legal_moves()
+    if depth >= max_depth or not captures:
+        # Only store evaluations at leaf nodes
+        quiescence_transposition_table[board_hash] = (stand_pat, depth)
         return stand_pat
 
+    # Otherwise, continue searching
     if maximizing_player:
         if stand_pat >= beta:
-            quiescence_transposition_table[board_hash] = (beta, depth)
+            # Store the evaluation only if it is at a leaf node
+            if depth >= max_depth or not captures:
+                quiescence_transposition_table[board_hash] = (beta, depth)
             return beta
         if alpha < stand_pat:
             alpha = stand_pat
 
-        captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
 
         for move in ordered_captures:
@@ -116,20 +127,25 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             score = quiescence_search(alpha, beta, False, depth + 1, max_depth)
             restore_global_state(saved_state)
             if score >= beta:
-                quiescence_transposition_table[board_hash] = (beta, depth)
+                # Store the evaluation only if it is at a leaf node
+                if depth >= max_depth or not captures:
+                    quiescence_transposition_table[board_hash] = (beta, depth)
                 return beta
             if score > alpha:
                 alpha = score
-        quiescence_transposition_table[board_hash] = (alpha, depth)
+        # Only store evaluations at leaf nodes
+        if depth >= max_depth or not captures:
+            quiescence_transposition_table[board_hash] = (alpha, depth)
         return alpha
     else:
         if stand_pat <= alpha:
-            quiescence_transposition_table[board_hash] = (alpha, depth)
+            # Store the evaluation only if it is at a leaf node
+            if depth >= max_depth or not captures:
+                quiescence_transposition_table[board_hash] = (alpha, depth)
             return alpha
         if beta > stand_pat:
             beta = stand_pat
 
-        captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
         for move in ordered_captures:
             piece, start_index, end_index = move
@@ -139,9 +155,13 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
             score = quiescence_search(alpha, beta, True, depth + 1, max_depth)
             restore_global_state(saved_state)
             if score <= alpha:
-                quiescence_transposition_table[board_hash] = (alpha, depth)
+                # Store the evaluation only if it is at a leaf node
+                if depth >= max_depth or not captures:
+                    quiescence_transposition_table[board_hash] = (alpha, depth)
                 return alpha
             if score < beta:
                 beta = score
-        quiescence_transposition_table[board_hash] = (beta, depth)
+        # Only store evaluations at leaf nodes
+        if depth >= max_depth or not captures:
+            quiescence_transposition_table[board_hash] = (beta, depth)
         return beta

@@ -5,7 +5,7 @@ import precomputed_tables
 from precomputed_tables import *
 from bit_manipulation import *
 from gui import display_draw, display_winner
-from globals import save_global_state, restore_global_state
+from globals import save_global_state, restore_global_state, switch_player_turn
 from utils import determine_what_piece_has_been_selected
 from debugging_functions import print_binary_as_chessboard
 
@@ -13,31 +13,44 @@ COLOR_TO_INDEX = {'black': 0, 'white': 1}
 empty_bitboard = np.uint64(0)
 
 
-def generate_knight_moves(index):
-    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
-    return precomputed_tables.KNIGHT_MOVES[index] & ~pieces_bitboard
+def generate_knight_moves_list(index):
+    '''
 
+    :param index:
+    :return:
+    '''
+    moves = []
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    end_squares = extract_set_bits(KNIGHT_MOVES[index] & ~pieces_bitboard)
+    for square in end_squares:
+        if not results_in_check(f'{globals.player_turn}_knight', index, square):
+            moves.append([f'{globals.player_turn}_knight', index, square])
+    return moves
+
+def generate_knight_moves_bitboard(index):
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    return KNIGHT_MOVES[index] & ~pieces_bitboard
 
 def find_diagonal_moves(i, occupancy):
     col = i & 7
-    masked_occupancy = precomputed_tables.DIAGONAL_MASKS[i] & occupancy
-    shift_val = (precomputed_tables.COLUMNS[0] * masked_occupancy) >> 56
-    occupancy = precomputed_tables.COLUMNS[0] * precomputed_tables.FIRST_ROW_MOVES[col][shift_val]
-    return precomputed_tables.DIAGONAL_MASKS[i] & occupancy
+    masked_occupancy = DIAGONAL_MASKS[i] & occupancy
+    shift_val = (COLUMNS[0] * masked_occupancy) >> 56
+    occupancy = COLUMNS[0] * FIRST_ROW_MOVES[col][shift_val]
+    return DIAGONAL_MASKS[i] & occupancy
 
 def find_antidiagonal_moves(i, occupancy):
     col = i & 7
-    masked_occupancy = precomputed_tables.ANTIDIAGONAL_MASKS[i] & occupancy
-    shift_val = (precomputed_tables.COLUMNS[0] * masked_occupancy) >> 56
-    occupancy = precomputed_tables.COLUMNS[0] * precomputed_tables.FIRST_ROW_MOVES[col][shift_val]
-    return precomputed_tables.ANTIDIAGONAL_MASKS[i] & occupancy
+    masked_occupancy = ANTIDIAGONAL_MASKS[i] & occupancy
+    shift_val = (COLUMNS[0] * masked_occupancy) >> 56
+    occupancy = COLUMNS[0] * FIRST_ROW_MOVES[col][shift_val]
+    return ANTIDIAGONAL_MASKS[i] & occupancy
 
 def get_row_moves_bitboard(i, occupancy):
     col = i & 7
-    masked_occupancy = precomputed_tables.ROW_MASKS[i] & occupancy
-    shift_val = (precomputed_tables.COLUMNS[0] * masked_occupancy) >> 56
-    occupancy = precomputed_tables.COLUMNS[0] * precomputed_tables.FIRST_ROW_MOVES[col][shift_val]
-    return precomputed_tables.ROW_MASKS[i] & occupancy
+    masked_occupancy = ROW_MASKS[i] & occupancy
+    shift_val = (COLUMNS[0] * masked_occupancy) >> 56
+    occupancy = COLUMNS[0] * FIRST_ROW_MOVES[col][shift_val]
+    return ROW_MASKS[i] & occupancy
 
 def get_column_moves_bitboard(i, occupancy):
     col_index = i & 7
@@ -47,41 +60,73 @@ def get_column_moves_bitboard(i, occupancy):
     occupancy = precomputed_tables.A1_to_H8_DIAGONAL_MASK * precomputed_tables.FIRST_ROW_MOVES[first_rank_index][shift_val]
     return (precomputed_tables.COLUMNS[7] & occupancy) >> (col_index ^ 7)
 
-def generate_bishop_moves(index):
+def generate_bishop_moves_list(index):
+    moves = []
+    diag_moves = find_diagonal_moves(index, globals.all_pieces_bitboard)
+    antidiag_moves = find_antidiagonal_moves(index, globals.all_pieces_bitboard)
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    end_squares = extract_set_bits((diag_moves | antidiag_moves) & ~pieces_bitboard)
+    for square in end_squares:
+        if not results_in_check(f'{globals.player_turn}_bishop', index, square):
+            moves.append([f'{globals.player_turn}_bishop', index, square])
+    return moves
+
+def generate_bishop_moves_bitboard(index):
     diag_moves = find_diagonal_moves(index, globals.all_pieces_bitboard)
     antidiag_moves = find_antidiagonal_moves(index, globals.all_pieces_bitboard)
     pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
     return (diag_moves | antidiag_moves) & ~pieces_bitboard
 
-
-
-def generate_rook_moves(index):
+def generate_queen_moves_list(index):
+    moves = []
+    diag_moves = find_diagonal_moves(index, globals.all_pieces_bitboard)
+    antidiag_moves = find_antidiagonal_moves(index, globals.all_pieces_bitboard)
     row_moves = get_row_moves_bitboard(index, globals.all_pieces_bitboard)
     col_moves = get_column_moves_bitboard(index, globals.all_pieces_bitboard)
     pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
-    return (row_moves ^ col_moves) & ~pieces_bitboard
+    end_squares = extract_set_bits((diag_moves | antidiag_moves | row_moves | col_moves) & ~pieces_bitboard)
+    for square in end_squares:
+        if not results_in_check(f'{globals.player_turn}_queen', index, square):
+            moves.append([f'{globals.player_turn}_queen', index, square])
+    return moves
 
+
+
+def generate_rook_moves_list(index):
+    moves = []
+    row_moves = get_row_moves_bitboard(index, globals.all_pieces_bitboard)
+    col_moves = get_column_moves_bitboard(index, globals.all_pieces_bitboard)
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    end_squares = extract_set_bits((row_moves | col_moves) & ~pieces_bitboard)
+    for square in end_squares:
+        if not results_in_check(f'{globals.player_turn}_rook', index, square):
+            moves.append([f'{globals.player_turn}_rook', index, square])
+    return moves
+
+def generate_rook_moves_bitboard(index):
+    row_moves = get_row_moves_bitboard(index, globals.all_pieces_bitboard)
+    col_moves = get_column_moves_bitboard(index, globals.all_pieces_bitboard)
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    return (row_moves | col_moves) & ~pieces_bitboard
 
 
 def compute_pawn_quiet_moves(index):
-    bb = 1 << index
-    white_starting_rank = 0x000000000000FF00
-    black_starting_rank = 0x00FF000000000000
-    starting_rank = white_starting_rank if globals.player_turn == 'white' else black_starting_rank
+    bb = np.uint64(1 << index)
+    starting_rank = 0x000000000000FF00 if globals.player_turn == 'white' else 0x00FF000000000000
     single_move = bb << 8 if globals.player_turn == 'white' else bb >> 8
     double_move = (bb & starting_rank) << 16 if globals.player_turn == 'white' else (bb & starting_rank) >> 16
     return single_move | double_move
 
-def generate_pawn_moves(index):
-    quiet_moves = compute_pawn_quiet_moves(index)
-    attacking_moves = compute_pawn_attack_moves(index)
-    if globals.player_turn == 'white':
-        valid_captures = attacking_moves & globals.black_pieces_bitboard
-        valid_quiets = quiet_moves & ~globals.black_pieces_bitboard
-    else:
-        valid_captures = attacking_moves & globals.white_pieces_bitboard
-        valid_quiets = quiet_moves & ~globals.white_pieces_bitboard
-    return valid_quiets | valid_captures
+
+def generate_king_moves_list(index):
+    moves = []
+    castling_moves = get_castling_options()
+    pieces_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'white' else globals.black_pieces_bitboard
+    end_squares = extract_set_bits((precomputed_tables.KING_MOVES[index] & ~pieces_bitboard) | castling_moves)
+    for square in end_squares:
+        if not results_in_check(f'{globals.player_turn}_king', index, square):
+            moves.append([f'{globals.player_turn}_king', index, square])
+    return moves
 
 def generate_king_moves_bitboard(index):
     castling_moves = get_castling_options()
@@ -89,19 +134,16 @@ def generate_king_moves_bitboard(index):
     return (precomputed_tables.KING_MOVES[index] & ~pieces_bitboard) | castling_moves
 
 
-
-
 def compute_pawn_attack_moves(index):
     bb = np.uint64(1 << index)
     file_a_mask = np.uint64(0x7F7F7F7F7F7F7F7F)
     file_h_mask = np.uint64(0xFEFEFEFEFEFEFEFE)
     if globals.player_turn == 'white':
-        left_attack = (bb & file_h_mask) << np.uint8(7)
-        right_attack = (bb & file_a_mask) << np.uint8(9)
+        left_attack = (bb & file_h_mask) << 7
+        right_attack = (bb & file_a_mask) << 9
     else:
-        left_attack = (bb & file_h_mask) >> np.uint8(9)
-        right_attack = (bb & file_a_mask) >> np.uint8(7)
-
+        left_attack = (bb & file_h_mask) >> 9
+        right_attack = (bb & file_a_mask) >> 7
     return left_attack | right_attack
 
 
@@ -112,25 +154,26 @@ def calculate_king_moves(index):
         return precomputed_tables.KING_MOVES[index] & ~(globals.black_pieces_bitboard)
 
 
-def generate_pawn_moves_bitboard(index):
-    player_index = COLOR_TO_INDEX[globals.player_turn]
-    opponent_colour = 'white' if globals.player_turn == 'black' else 'black'
+def generate_pawn_moves_list(index):
+    moves = []
+    quiet_moves = compute_pawn_quiet_moves(index)
+    attacking_moves = compute_pawn_attack_moves(index)
     if globals.player_turn == 'white':
-        attacks = precomputed_tables.PAWN_ATTACKS[1][index] & globals.black_pieces_bitboard
-        en_passants = is_en_passant_legal() if len(globals.game_states) >= 4 else np.uint64(0)
-        white_free = to_bitboard(index + 8) & globals.all_pieces_bitboard == empty_bitboard
-        quiets = precomputed_tables.PAWN_QUIETS[0][index] & ~globals.all_pieces_bitboard if white_free else empty_bitboard
+        valid_captures = attacking_moves & globals.black_pieces_bitboard
+        valid_quiets = quiet_moves & ~globals.black_pieces_bitboard
     else:
-        attacks = precomputed_tables.PAWN_ATTACKS[0][index] & globals.white_pieces_bitboard
-        en_passants = is_en_passant_legal() if len(globals.game_states) > 3 else np.uint64(0)
-        black_free = to_bitboard(index - 8) & globals.all_pieces_bitboard == empty_bitboard
-        quiets = precomputed_tables.PAWN_QUIETS[1][index] & ~globals.all_pieces_bitboard if black_free else empty_bitboard
-    return attacks | quiets | en_passants
+        valid_captures = attacking_moves & globals.white_pieces_bitboard
+        valid_quiets = quiet_moves & ~globals.white_pieces_bitboard
 
-import numpy as np
+    end_squares = extract_set_bits(valid_quiets | valid_captures)
+    for square in end_squares:
+        moves.append([f'{globals.player_turn}_pawn', index, square])
+    return moves
 
 
 def is_en_passant_legal():
+    if len(globals.game_states) < 3:
+        return []
     COL_A_MASK = 0xFEFEFEFEFEFEFEFE
     COL_H_MASK = 0x7F7F7F7F7F7F7F7F
 
@@ -147,10 +190,10 @@ def is_en_passant_legal():
                 masked_end_square_left = (end_square & COL_A_MASK) >> 1
                 masked_end_square_right = (end_square & COL_H_MASK) << 1
 
-                if (masked_end_square_left & globals.piece_bitboards['white_pawn']) or (
-                        masked_end_square_right & globals.piece_bitboards['white_pawn']):
-
-                    return end_square << 8
+                if (masked_end_square_left & globals.piece_bitboards['white_pawn']):
+                    return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) - 1, int(find_msb_index(end_square)) + 8]
+                elif  (masked_end_square_right & globals.piece_bitboards['white_pawn']):
+                    return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) + 1, int(find_msb_index(end_square)) + 8]
 
     elif globals.player_turn == 'black':
         current_white_pawn_state = globals.game_states[-1]['white_pawn']
@@ -164,44 +207,32 @@ def is_en_passant_legal():
                 masked_end_square_left = (end_square & COL_A_MASK) >> 1
                 masked_end_square_right = (end_square & COL_H_MASK) << 1
 
-                if (masked_end_square_left & globals.piece_bitboards['black_pawn']) or (
-                        masked_end_square_right & globals.piece_bitboards['black_pawn']):
+                if (masked_end_square_left & globals.piece_bitboards['black_pawn']):
+                    return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) - 1, int(find_msb_index(end_square)) - 8]
 
-                    return end_square >> 8
+                elif (masked_end_square_right & globals.piece_bitboards['black_pawn']):
+                    return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) + 1,
+                            int(find_msb_index(end_square)) -8]
 
-    return np.uint64(0)
+    return False
 
 
 def get_castling_options():
     castling_options = np.uint64(0)
     if globals.player_turn == 'white':
-        # White Kingside Castling
         if not (np.uint64(1) << 5 & globals.all_pieces_bitboard) and not (np.uint64(1) << 6 & globals.all_pieces_bitboard):
-            if not is_square_attacked(4, globals.piece_bitboards, 'white') and not is_square_attacked(5, globals.piece_bitboards,
-                                                                                     'white') and not is_square_attacked(
-                    6, globals.piece_bitboards, 'white') and not globals.white_king_has_moved and not globals.white_kingside_rook_has_moved:
+            if not is_square_attacked(4, globals.piece_bitboards, 'white') and not is_square_attacked(5, globals.piece_bitboards, 'white') and not is_square_attacked(6, globals.piece_bitboards, 'white') and not globals.white_king_has_moved and not globals.white_kingside_rook_has_moved:
                 castling_options |= np.uint64(1) << 6
-        # White Queenside Castling
-        if not (np.uint64(1) << 1 & globals.all_pieces_bitboard) and not (np.uint64(1) << 2 & globals.all_pieces_bitboard) and not (
-                np.uint64(1) << 3 & globals.all_pieces_bitboard):
-            if not is_square_attacked(2, globals.piece_bitboards, 'white') and not is_square_attacked(3, globals.piece_bitboards,
-                                                                                     'white') and not is_square_attacked(
-                    4, globals.piece_bitboards, 'white') and not globals.white_king_has_moved and not globals.white_queenside_rook_has_moved:
+        if not (np.uint64(1) << 1 & globals.all_pieces_bitboard) and not (np.uint64(1) << 2 & globals.all_pieces_bitboard) and not (np.uint64(1) << 3 & globals.all_pieces_bitboard):
+            if not is_square_attacked(2, globals.piece_bitboards, 'white') and not is_square_attacked(3, globals.piece_bitboards, 'white') and not is_square_attacked(4, globals.piece_bitboards, 'white') and not globals.white_king_has_moved and not globals.white_queenside_rook_has_moved:
                 castling_options |= np.uint64(1) << 2
 
     elif globals.player_turn == 'black':
-        # Black Kingside Castling
         if not (np.uint64(1) << 62 & globals.all_pieces_bitboard) and not (np.uint64(1) << 61 & globals.all_pieces_bitboard):
-            if not is_square_attacked(60, globals.piece_bitboards, 'black') and not is_square_attacked(61, globals.piece_bitboards,
-                                                                                    'black') and not is_square_attacked(
-                    62, globals.piece_bitboards, 'black') and not globals.black_king_has_moved and not globals.black_kingside_rook_has_moved:
+            if not is_square_attacked(60, globals.piece_bitboards, 'black') and not is_square_attacked(61, globals.piece_bitboards, 'black') and not is_square_attacked(62, globals.piece_bitboards, 'black') and not globals.black_king_has_moved and not globals.black_kingside_rook_has_moved:
                 castling_options |= np.uint64(1) << 62
-        # Black Queenside Castling
-        if not (np.uint64(1) << 57 & globals.all_pieces_bitboard) and not (np.uint64(1) << 58 & globals.all_pieces_bitboard) and not (
-                np.uint64(1) << 59 & globals.all_pieces_bitboard):
-            if not is_square_attacked(60, globals.piece_bitboards, 'black') and not is_square_attacked(59, globals.piece_bitboards,
-                                                                                    'black') and not is_square_attacked(
-                    58, globals.piece_bitboards, 'black') and not globals.black_king_has_moved and not globals.black_queenside_rook_has_moved:
+        if not (np.uint64(1) << 57 & globals.all_pieces_bitboard) and not (np.uint64(1) << 58 & globals.all_pieces_bitboard) and not (np.uint64(1) << 59 & globals.all_pieces_bitboard):
+            if not is_square_attacked(57, globals.piece_bitboards, 'black') and not is_square_attacked(58, globals.piece_bitboards, 'black') and not is_square_attacked(59, globals.piece_bitboards, 'black') and not globals.black_king_has_moved and not globals.black_queenside_rook_has_moved:
                 castling_options |= np.uint64(1) << 58
 
     return castling_options
@@ -217,7 +248,6 @@ def make_move(piece, start_index, end_index):
         globals.piece_bitboards['black_pawn'] = clear_square(globals.piece_bitboards['black_pawn'], end_index - 8)
         globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index - 8)
         globals.all_pieces_bitboard = clear_square(globals.all_pieces_bitboard, end_index - 8)
-
 
     elif piece == 'white_pawn' and 56 <= end_index <= 63:
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], start_index)
@@ -325,11 +355,6 @@ def make_move(piece, start_index, end_index):
     globals.game_states.append(globals.piece_bitboards)
 
 
-
-
-def get_queen_moves(square):
-    return generate_rook_moves(square) | generate_bishop_moves(square)
-
 def results_in_check(piece, start_index, end_index):
 
     saved_state = save_global_state()
@@ -345,7 +370,7 @@ def results_in_check(piece, start_index, end_index):
         return True
 
     opponent_knight_bitboard = globals.piece_bitboards[f'{opponent_colour}_knight']
-    if (generate_knight_moves(king_square_index) & opponent_knight_bitboard) != empty_bitboard:
+    if (generate_knight_moves_bitboard(king_square_index) & opponent_knight_bitboard) != empty_bitboard:
         restore_global_state(saved_state)
         return True
 
@@ -356,12 +381,12 @@ def results_in_check(piece, start_index, end_index):
 
     opponent_bishops_bitboard = globals.piece_bitboards[f'{opponent_colour}_bishop']
     opponent_queens_bitboard = globals.piece_bitboards[f'{opponent_colour}_queen']
-    if (generate_bishop_moves(king_square_index) & (opponent_bishops_bitboard | opponent_queens_bitboard)) != empty_bitboard:
+    if (generate_bishop_moves_bitboard(king_square_index) & (opponent_bishops_bitboard | opponent_queens_bitboard)) != empty_bitboard:
         restore_global_state(saved_state)
         return True
 
     opponent_rooks_bitboard = globals.piece_bitboards[f'{opponent_colour}_rook']
-    if (generate_rook_moves(king_square_index) & (opponent_rooks_bitboard | opponent_queens_bitboard)) != empty_bitboard:
+    if (generate_rook_moves_bitboard(king_square_index) & (opponent_rooks_bitboard | opponent_queens_bitboard)) != empty_bitboard:
         restore_global_state(saved_state)
         return True
 
@@ -386,7 +411,7 @@ def is_square_attacked(square_index, board, player_turn):
         return True
 
     # Check if the square is attacked by opponent's knights
-    knight_moves = generate_knight_moves(square_index)
+    knight_moves = generate_knight_moves_bitboard(square_index)
     if (knight_moves & opponent_knight_bitboard) != empty_bitboard:
         return True
 
@@ -396,8 +421,8 @@ def is_square_attacked(square_index, board, player_turn):
         return True
 
     # Check if the square is attacked by opponent's bishops or queens
-    bishop_moves = generate_bishop_moves(square_index)
-    queen_moves = generate_rook_moves(square_index)  # Note: Assuming rook and queen moves are separate
+    bishop_moves = generate_bishop_moves_bitboard(square_index)
+    queen_moves = generate_rook_moves_bitboard(square_index)  # Note: Assuming rook and queen moves are separate
     if (bishop_moves & (opponent_bishops_bitboard | opponent_queens_bitboard)) != empty_bitboard:
         return True
 
@@ -408,49 +433,50 @@ def is_square_attacked(square_index, board, player_turn):
     return False
 
 
-def gen_piece_moves(starting_square, piece):
-    move_generators = {
-        'pawn': generate_pawn_moves_bitboard,
-        'knight': generate_knight_moves,
-        'bishop': generate_bishop_moves,
-        'rook': generate_rook_moves,
-        'queen': get_queen_moves,
-        'king': generate_king_moves_bitboard,
-    }
-    moves_bitboard = move_generators[piece.split('_')[1]](starting_square)
-    moves = []
-    while moves_bitboard != empty_bitboard:
-        end_index = find_lsb_index(moves_bitboard)
-        moves.append([piece, starting_square, end_index])
-        moves_bitboard &= moves_bitboard - 1
-    return moves
-
-def find_all_moves():
-    all_moves = []
-    player_pieces = [piece for piece in globals.piece_bitboards if piece.startswith(globals.player_turn)]
-    for piece in player_pieces:
-        piece_bitboard = globals.piece_bitboards[piece]
-        for starting_square in bit_manipulation.occupied_squares(piece_bitboard):
-            moves = gen_piece_moves(starting_square, piece)
-            all_moves.extend(moves)
-    return all_moves
-
 
 def gen_legal_moves():
-    opponent_colour = 'white' if globals.player_turn == 'black' else 'black'
-    opponent_bitboard = globals.black_pieces_bitboard if opponent_colour == 'black' else globals.white_pieces_bitboard
-    attacking_moves = []
-    non_attacking_moves = []
-    all_moves = find_all_moves()
+    all_moves = []
+    captures = []
+    checks = []
+    non_captures = []
+
+    if is_en_passant_legal():
+        captures.append(is_en_passant_legal())
+    for piece_type in [f'{globals.player_turn}_pawn', f'{globals.player_turn}_knight', f'{globals.player_turn}_bishop', f'{globals.player_turn}_rook', f'{globals.player_turn}_queen', f'{globals.player_turn}_king']:
+        for index in extract_set_bits(globals.piece_bitboards[piece_type]):
+            if 'pawn' in piece_type:
+                all_moves.extend(generate_pawn_moves_list(index))
+            elif 'knight' in piece_type:
+                all_moves.extend(generate_knight_moves_list(index))
+            elif 'bishop' in piece_type:
+                all_moves.extend(generate_bishop_moves_list(index))
+            elif 'rook' in piece_type:
+                all_moves.extend(generate_rook_moves_list(index))
+            elif 'queen' in piece_type:
+                all_moves.extend(generate_queen_moves_list(index))
+            elif 'king' in piece_type:
+                all_moves.extend(generate_king_moves_list(index))
+
+
+    opponent_bitboard = globals.white_pieces_bitboard if globals.player_turn == 'black' else globals.black_pieces_bitboard
 
     for move in all_moves:
         piece, starting_square, target_square = move
         if not results_in_check(piece, starting_square, target_square):
-            if (np.uint64(1) << target_square) & opponent_bitboard:
-                attacking_moves.append(move)
+            switch_player_turn()
+            if results_in_check(piece, starting_square, target_square):
+                checks.append(move)
+                switch_player_turn()
+                continue
             else:
-                non_attacking_moves.append(move)
-    return attacking_moves, non_attacking_moves
+                switch_player_turn()
+
+            if (np.uint64(1) << target_square) & opponent_bitboard:
+                captures.append(move)
+            else:
+                non_captures.append(move)
+    #print(f'checks: {checks} \ncaptures: {captures} \nnon_captures: {non_captures}')
+    return checks, captures, non_captures
 
 
 def checkmate(winner):

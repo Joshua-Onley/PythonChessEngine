@@ -1,3 +1,1 @@
-from debugging_functions import print_binary_as_chessboard
 
-print_binary_as_chessboard(1245876065314)

@@ -1,6 +1,6 @@
 from bit_manipulation import occupied_squares, pop_count
 from precomputed_tables import FRONT_SPANS, neighbor_columns, KING_FRONT_SPANS, ADJACENT_SQUARES, PAWN_ATTACKS
-from move_logic import generate_bishop_moves, generate_rook_moves, generate_knight_moves, gen_legal_moves
+from move_logic import generate_bishop_moves_list, generate_rook_moves_list, generate_knight_moves_list, gen_legal_moves
 from debugging_functions import print_binary_as_bitboard
 import numpy as np
 

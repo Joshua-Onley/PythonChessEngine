@@ -56,6 +56,16 @@ def occupied_squares(bitboard):
         yield lsb_square
         bitboard ^= to_bitboard(lsb_square)
 
+def extract_set_bits(bitboard):
+    moves = []
+    index = 0
+    while bitboard:
+        if bitboard & 1:
+            moves.append(index)
+        bitboard >>= 1
+        index += 1
+    return moves
+
 def pop_count(bitboard):
     return np.uint8(np.binary_repr(bitboard).count('1'))
 

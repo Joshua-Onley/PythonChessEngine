@@ -1,6 +1,6 @@
 import pygame
 import move_logic
-from move_logic import generate_pawn_moves, generate_bishop_moves, generate_rook_moves, generate_king_moves, generate_knight_moves, gen_legal_moves, generate_king_moves_bitboard, results_in_check
+from move_logic import generate_pawn_moves_list, generate_bishop_moves_list, generate_rook_moves_list, generate_king_moves_list, generate_knight_moves_list, gen_legal_moves, generate_king_moves_bitboard, results_in_check
 from precomputed_tables import BITBOARD_INDEX_TO_CHESS_SQUARE
 from gui import draw_board_from_bitboards, display_winner
 import globals
@@ -15,6 +15,8 @@ from utils import determine_what_piece_has_been_selected
 
 
 pygame.init()
+pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP])
+
 WIDTH, HEIGHT = 800, 800
 ROWS, COLS = 8, 8
 SQUARE_SIZE = WIDTH // COLS
@@ -32,44 +34,37 @@ for piece in pieces:
     images[piece] = pygame.transform.scale(pygame.image.load(f'images/{piece} copy.png'), (SQUARE_SIZE, SQUARE_SIZE))
 
 
+
 def validate_move(piece, start_index, end_index):
-    from move_logic import is_en_passant_legal
+    """
 
-    move_generators = {
-        'knight': generate_knight_moves,
-        'king': generate_king_moves_bitboard,
-        'pawn': generate_pawn_moves,
-        'bishop': generate_bishop_moves,
-        'rook': generate_rook_moves,
-        'queen': lambda idx: generate_rook_moves(idx) | generate_bishop_moves(idx),
-    }
-
-    piece_type = piece.split('_')[1]
-
-    if piece_type not in move_generators:
-        return False
-
-    potential_moves = move_generators[piece_type](start_index)
-    if piece_type == 'pawn' and len(globals.game_states) > 2:
-        en_passant_moves = is_en_passant_legal()
-        if en_passant_moves:
-            potential_moves |= en_passant_moves
-
-    return (potential_moves >> end_index) & 1 == 1
-
+    :param piece: string representation of the piece
+    :param start_index: integer representing the starting position of the piece
+    :param end_index: integer representing the end position of the piece
+    :return: True if user move is in legal moves, else False
+    """
+    legal_moves_tuple = gen_legal_moves()
+    checks, captures, non_captures = legal_moves_tuple
+    move_to_check = [piece, start_index, end_index]
+    if move_to_check in captures or move_to_check in non_captures or move_to_check in checks:
+        return True
+    return False
 
 
 def handle_move(piece, start_index, end_index):
-
+    """
+    This function ensures the move the user is trying to make is valid and then applies the move to the board
+    :param piece: string representation of the piece
+    :param start_index: integer representing the starting position of the piece
+    :param end_index: integer representing the end position of the piece
+    :return: returns the updated board states after user move has been validated and applied
+    """
     target_piece = determine_what_piece_has_been_selected(end_index, globals.piece_bitboards)
-
     if start_index == end_index:
         return None
-
     if target_piece:
         if (target_piece.startswith('white') and globals.player_turn == 'white') or (target_piece.startswith('black') and globals.player_turn == 'black'):
             return None
-
     if not validate_move(piece, start_index, end_index):
         return None
 
@@ -85,7 +80,6 @@ def handle_move(piece, start_index, end_index):
         globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index - 8)
         globals.all_pieces_bitboard = clear_square(globals.all_pieces_bitboard, end_index - 8)
 
-
     elif piece == 'white_pawn' and 56 <= end_index <= 63:
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], start_index)
         globals.piece_bitboards['white_queen'] = set_square(globals.piece_bitboards['white_queen'], end_index)
@@ -96,7 +90,6 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], end_index + 8)
         globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, end_index + 8)
         globals.all_pieces_bitboard = clear_square(globals.all_pieces_bitboard, end_index + 8)
-
 
     elif piece == 'black_pawn' and 0 <= end_index <= 7:
         globals.piece_bitboards['black_pawn'] = clear_square(globals.piece_bitboards['black_pawn'], start_index)
@@ -197,92 +190,67 @@ def handle_move(piece, start_index, end_index):
 
 
 def handle_piece_selection(index):
-
+    """
+    this function validates that the user has chosen one of their own pieces
+    :param index: integer representing the index of the square the user has clicked
+    :return: True if the user has picked one of their own pieces, else False
+    """
     if globals.player_turn == 'white' and (globals.white_pieces_bitboard >> index) & 1 == 0 and (globals.black_pieces_bitboard >> index) & 1 == 1:
             return False
     elif globals.player_turn == 'black' and (globals.black_pieces_bitboard >> index) & 1 == 0 and (globals.white_pieces_bitboard >> index) & 1 == 1:
             return False
-
-    else:
-        return True
-
-import random
-def choose_random_move(moves):
-    if moves:
-        return random.choice(moves)
-    else:
-        return None
+    return True
 
 
+# main game loop
 def main():
     from computer_move import make_computer_move
     running = True
     selected_piece = None
     piece_selected = False
     piece = None
-
-    draw_board_from_bitboards(WIN, globals.piece_bitboards['white_pawn'], globals.piece_bitboards['white_knight'],
-                              globals.piece_bitboards['white_bishop'], globals.piece_bitboards['white_rook'],
-                              globals.piece_bitboards['white_queen'], globals.piece_bitboards['white_king'],
-                              globals.piece_bitboards['black_pawn'], globals.piece_bitboards['black_knight'],
-                              globals.piece_bitboards['black_bishop'], globals.piece_bitboards['black_rook'],
-                              globals.piece_bitboards['black_queen'], globals.piece_bitboards['black_king'], images)
+    draw_board_from_bitboards(WIN, *globals.piece_bitboards.values(), images)
     pygame.display.flip()
 
     while running:
         if globals.player_turn == 'black':
-
             make_computer_move('black')
-            draw_board_from_bitboards(WIN, globals.piece_bitboards['white_pawn'],
-                                      globals.piece_bitboards['white_knight'], globals.piece_bitboards['white_bishop'],
-                                      globals.piece_bitboards['white_rook'], globals.piece_bitboards['white_queen'],
-                                      globals.piece_bitboards['white_king'],
-                                      globals.piece_bitboards['black_pawn'], globals.piece_bitboards['black_knight'],
-                                      globals.piece_bitboards['black_bishop'], globals.piece_bitboards['black_rook'],
-                                      globals.piece_bitboards['black_queen'], globals.piece_bitboards['black_king'],
-                                      images)
+            draw_board_from_bitboards(WIN, *globals.piece_bitboards.values(), images)
             pygame.display.flip()
             globals.half_move_counter += 1
             globals.player_turn = 'white'
+            continue
 
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
+                break
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
-                col = (mouse_x // SQUARE_SIZE)
+                col = mouse_x // SQUARE_SIZE
                 row = 7 - (mouse_y // SQUARE_SIZE)
                 index = row * 8 + col
 
                 if globals.player_turn == 'white':
                     legal_moves = gen_legal_moves()
-                    if len(legal_moves[0]) == 0 and len(legal_moves[1]) == 0:
-                            display_winner('black')
+                    if not legal_moves[0] and not legal_moves[1] and not legal_moves[2]:
+                        display_winner('black')
+                        continue
+
                     if not piece_selected:
                         if handle_piece_selection(index):
                             selected_piece = index
                             piece_selected = True
                             piece = determine_what_piece_has_been_selected(index, globals.piece_bitboards)
-
                     else:
                         target_index = index
                         piece_selected = False
 
                         if piece:
                             if handle_move(piece, selected_piece, target_index):
-                                draw_board_from_bitboards(WIN, globals.piece_bitboards['white_pawn'],
-                                                          globals.piece_bitboards['white_knight'],
-                                                          globals.piece_bitboards['white_bishop'],
-                                                          globals.piece_bitboards['white_rook'],
-                                                          globals.piece_bitboards['white_queen'],
-                                                          globals.piece_bitboards['white_king'],
-                                                          globals.piece_bitboards['black_pawn'],
-                                                          globals.piece_bitboards['black_knight'],
-                                                          globals.piece_bitboards['black_bishop'],
-                                                          globals.piece_bitboards['black_rook'],
-                                                          globals.piece_bitboards['black_queen'],
-                                                          globals.piece_bitboards['black_king'], images)
+                                draw_board_from_bitboards(WIN, *globals.piece_bitboards.values(), images)
                                 pygame.display.flip()
                                 selected_piece = None
                                 piece = None
@@ -290,6 +258,7 @@ def main():
                                 globals.player_turn = 'black'
                             else:
                                 print("Invalid move for white.")
+
     pygame.quit()
 
 

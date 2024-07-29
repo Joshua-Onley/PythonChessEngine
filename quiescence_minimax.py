@@ -16,15 +16,15 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
     global leaf_node_count
 
     if depth == 0:
-        return quiescence_search(alpha, beta, maximizing_player, depth, 10), None
+        return quiescence_search(alpha, beta, maximizing_player, depth, 5), None
 
     best_move = None
     if maximizing_player:
 
-        captures, non_captures = gen_legal_moves()
+        checks, captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         max_eval = float('-inf')
-        for move in ordered_captures + non_captures:
+        for move in checks + ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
@@ -39,10 +39,10 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
                 break
         return max_eval, best_move
     else:
-        captures, non_captures = gen_legal_moves()
+        checks, captures, non_captures = gen_legal_moves()
         ordered_captures = order_moves(captures)
         min_eval = float('inf')
-        for move in ordered_captures + non_captures:
+        for move in checks + ordered_captures + non_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
@@ -76,10 +76,10 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         if alpha < stand_pat:
             alpha = stand_pat
 
-        captures, _ = gen_legal_moves()
+        checks, captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
 
-        for move in ordered_captures:
+        for move in checks + ordered_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
@@ -97,9 +97,9 @@ def quiescence_search(alpha, beta, maximizing_player, depth, max_depth):
         if beta > stand_pat:
             beta = stand_pat
 
-        captures, _ = gen_legal_moves()
+        checks, captures, _ = gen_legal_moves()
         ordered_captures = order_moves(captures)
-        for move in ordered_captures:
+        for move in checks + ordered_captures:
             piece, start_index, end_index = move
             saved_state = save_global_state()
             make_move(piece, start_index, end_index)
