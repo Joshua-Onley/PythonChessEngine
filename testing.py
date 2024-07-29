@@ -1,6 +1,3 @@
-import numpy as np
-from debugging_functions import print_binary_as_chessboard, print_binary_as_bitboard
+from debugging_functions import print_binary_as_chessboard
 
-print_binary_as_bitboard(0xFEFEFEFEFEFEFEFE)
-
-
+print_binary_as_chessboard(1245876065314)

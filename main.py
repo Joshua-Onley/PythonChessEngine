@@ -50,7 +50,6 @@ def validate_move(piece, start_index, end_index):
         return False
 
     potential_moves = move_generators[piece_type](start_index)
-
     if piece_type == 'pawn' and len(globals.game_states) > 2:
         en_passant_moves = is_en_passant_legal()
         if en_passant_moves:
@@ -83,6 +82,9 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], start_index)
         globals.piece_bitboards['white_pawn'] = set_square(globals.piece_bitboards['white_pawn'], end_index)
         globals.piece_bitboards['black_pawn'] = clear_square(globals.piece_bitboards['black_pawn'], end_index - 8)
+        globals.black_pieces_bitboard = clear_square(globals.black_pieces_bitboard, end_index - 8)
+        globals.all_pieces_bitboard = clear_square(globals.all_pieces_bitboard, end_index - 8)
+
 
     elif piece == 'white_pawn' and 56 <= end_index <= 63:
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], start_index)
@@ -92,6 +94,9 @@ def handle_move(piece, start_index, end_index):
         globals.piece_bitboards['black_pawn'] = clear_square(globals.piece_bitboards['black_pawn'], start_index)
         globals.piece_bitboards['black_pawn'] = set_square(globals.piece_bitboards['black_pawn'], end_index)
         globals.piece_bitboards['white_pawn'] = clear_square(globals.piece_bitboards['white_pawn'], end_index + 8)
+        globals.white_pieces_bitboard = clear_square(globals.white_pieces_bitboard, end_index + 8)
+        globals.all_pieces_bitboard = clear_square(globals.all_pieces_bitboard, end_index + 8)
+
 
     elif piece == 'black_pawn' and 0 <= end_index <= 7:
         globals.piece_bitboards['black_pawn'] = clear_square(globals.piece_bitboards['black_pawn'], start_index)
