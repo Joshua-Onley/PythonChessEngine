@@ -40,6 +40,7 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
         return max_eval, best_move
     else:
         checks, captures, non_captures = gen_legal_moves()
+        print(f'checks: {checks}, captures: {captures}, non_captures: {non_captures}')
         ordered_captures = order_moves(captures)
         min_eval = float('inf')
         for move in checks + ordered_captures + non_captures:
