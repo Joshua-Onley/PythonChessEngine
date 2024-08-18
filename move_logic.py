@@ -117,7 +117,6 @@ def compute_pawn_quiet_moves(index):
     single_move = bb << 8 if globals.player_turn == 'white' else bb >> 8
     double_move = (bb & starting_rank) << 16 if globals.player_turn == 'white' else (bb & starting_rank) >> 16
     white_clear_path = (to_bitboard(index + np.uint(8)) & globals.all_pieces_bitboard) == empty_bitboard
-    print(globals.all_pieces_bitboard)
     black_clear_path = (to_bitboard(index - np.uint(8)) & globals.all_pieces_bitboard) == empty_bitboard
     if (globals.player_turn == 'white' and white_clear_path) or (globals.player_turn == 'black' and black_clear_path):
         return single_move | double_move
@@ -141,8 +140,6 @@ def generate_king_moves_bitboard(index):
 
 
 def compute_pawn_attack_moves(index):
-    print(index)
-    print(type(index))
     bb = np.uint64(1 << index)
     file_a_mask = np.uint64(0x7F7F7F7F7F7F7F7F)
     file_h_mask = np.uint64(0xFEFEFEFEFEFEFEFE)
@@ -192,7 +189,11 @@ def is_en_passant_legal():
 
         if current_black_pawn_state != previous_black_pawn_state:
             start_square = previous_black_pawn_state & ~current_black_pawn_state
+            print('start square')
+            print_binary_as_chessboard(start_square)
             end_square = ~previous_black_pawn_state & current_black_pawn_state
+            print('end square')
+            print_binary_as_chessboard(end_square)
 
             if (start_square >> 16) & end_square:
                 # Apply column masks before checking for adjacent white pawns
@@ -201,7 +202,7 @@ def is_en_passant_legal():
 
                 if (masked_end_square_left & globals.piece_bitboards['white_pawn']):
                     return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) - 1, int(find_msb_index(end_square)) + 8]
-                elif  (masked_end_square_right & globals.piece_bitboards['white_pawn']):
+                elif (masked_end_square_right & globals.piece_bitboards['white_pawn']):
                     return [f'{globals.player_turn}_pawn', int(find_msb_index(end_square)) + 1, int(find_msb_index(end_square)) + 8]
 
     elif globals.player_turn == 'black':
@@ -512,7 +513,6 @@ def gen_legal_moves():
                 captures.append(move)
             else:
                 non_captures.append(move)
-    #print(f'checks: {checks} \ncaptures: {captures} \nnon_captures: {non_captures}')
     return checks, captures, non_captures
 
 

@@ -1,6 +1,6 @@
 from bit_manipulation import occupied_squares, pop_count
 from precomputed_tables import FRONT_SPANS, neighbor_columns, KING_FRONT_SPANS, ADJACENT_SQUARES, PAWN_ATTACKS
-from move_logic import generate_bishop_moves_list, generate_rook_moves_list, generate_knight_moves_list, gen_legal_moves
+from move_logic import generate_bishop_moves_bitboard, generate_rook_moves_bitboard, generate_knight_moves_bitboard, gen_legal_moves
 from debugging_functions import print_binary_as_bitboard
 import numpy as np
 
@@ -12,13 +12,13 @@ def calculate_bishop_mobility_bonus(board):
     # calculate white bishop mobility bonus
     white_bishop_indexes = occupied_squares(board['white_bishop'])
     for index in white_bishop_indexes:
-        moves_bitboard = generate_bishop_moves(index)
+        moves_bitboard = generate_bishop_moves_bitboard(index)
         white_bonus += pop_count(moves_bitboard) * 4
 
     # calculate black bishop mobility bonus
     black_bishop_indexes = occupied_squares(board['black_bishop'])
     for index in black_bishop_indexes:
-        moves_bitboard = generate_bishop_moves(index)
+        moves_bitboard = generate_bishop_moves_bitboard(index)
         black_bonus += pop_count(moves_bitboard) * 4
 
     return white_bonus, black_bonus
@@ -30,7 +30,7 @@ def calculate_knight_bonuses(board):
 
     def mobility_bonus(knight_index, board, player_turn):
         bonus = 0
-        moves_bitboard = generate_knight_moves(knight_index)
+        moves_bitboard = generate_knight_moves_bitboard(knight_index)
         bonus += pop_count(moves_bitboard) * 5
         return bonus
 
@@ -110,9 +110,8 @@ def calculate_rook_bonuses(board, white_pieces, black_pieces, all_pieces_bitboar
     def rook_mobility_bonus(index, board, player_turn):
         bonus = 0
 
-        moves_bitboard = generate_rook_moves(index)
+        moves_bitboard = generate_rook_moves_bitboard(index)
         bonus += pop_count(moves_bitboard) * 4
-        number_of_moves = pop_count(moves_bitboard)
         return bonus
 
     def rook_attack_king_adj_file(index, opp_king_bitboard):
@@ -186,7 +185,6 @@ def calculate_pawn_bonuses(board, white_pieces, black_pieces, all_pieces_bitboar
     black_pawn_indexes = list(occupied_squares(black_pawns_bitboard))
 
     for index in white_pawn_indexes:
-        pawn_advance_bonus = advance_bonus(index, 'white')
         white_bonus += advance_bonus(index, 'white')
 
         if doubled_pawns(index, white_pawns_bitboard):
@@ -200,7 +198,6 @@ def calculate_pawn_bonuses(board, white_pieces, black_pieces, all_pieces_bitboar
 
 
     for index in black_pawn_indexes:
-        black_pawn_advance_bonus = advance_bonus(index, 'black')
         black_bonus += advance_bonus(index, 'black')
 
         if doubled_pawns(index, black_pawns_bitboard):
@@ -303,7 +300,6 @@ def evaluate_position(board, white_pieces_bitboard, black_pieces_bitboard, maxim
             black_position_value += piece_count * piece_value
 
     score += int(white_position_value) - int(black_position_value)
-
 
     return score
 

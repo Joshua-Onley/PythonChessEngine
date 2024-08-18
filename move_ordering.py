@@ -1,3 +1,4 @@
+# This file uses the MVV-LVA sorting algorithm to order the capture moves
 
 import globals
 
