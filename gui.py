@@ -14,7 +14,6 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 
 def draw_board_from_bitboards(win, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk, images):
-    # Draw the empty chess board
     colors = [WHITE, GRAY]
     for row in range(8):
         for col in range(8):
