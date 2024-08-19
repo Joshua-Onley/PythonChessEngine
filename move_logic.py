@@ -189,11 +189,7 @@ def is_en_passant_legal():
 
         if current_black_pawn_state != previous_black_pawn_state:
             start_square = previous_black_pawn_state & ~current_black_pawn_state
-            print('start square')
-            print_binary_as_chessboard(start_square)
             end_square = ~previous_black_pawn_state & current_black_pawn_state
-            print('end square')
-            print_binary_as_chessboard(end_square)
 
             if (start_square >> 16) & end_square:
                 # Apply column masks before checking for adjacent white pawns

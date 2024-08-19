@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from gui import draw_board_from_bitboards  # Make sure this function is correctly implemented
+from gui import draw_board_from_bitboards
 
 pygame.init()
 WIDTH, HEIGHT = 800, 800

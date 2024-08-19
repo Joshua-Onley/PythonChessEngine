@@ -1,7 +1,4 @@
 import globals
-
-minimax_call_count = 0
-
 from move_logic import gen_legal_moves, make_move
 from globals import save_global_state, restore_global_state, switch_player_turn
 from PST_evaluation import evaluate
@@ -40,7 +37,6 @@ def alpha_beta_quiescence_minimax(depth, maximizing_player, alpha, beta):
         return max_eval, best_move
     else:
         checks, captures, non_captures = gen_legal_moves()
-        print(f'checks: {checks}, captures: {captures}, non_captures: {non_captures}')
         ordered_captures = order_moves(captures)
         min_eval = float('inf')
         for move in checks + ordered_captures + non_captures:
