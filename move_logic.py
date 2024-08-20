@@ -148,7 +148,7 @@ def calculate_king_moves(index):
 
 
 def generate_pawn_moves_list(index):
-
+    piece = 'white_pawn' if globals.player_turn == 'white' else 'black_pawn'
     moves = []
     if globals.player_turn == 'white':
         quiet_moves = compute_pawn_quiet_moves(index)
@@ -163,7 +163,9 @@ def generate_pawn_moves_list(index):
 
     end_squares = extract_set_bits(valid_quiets | valid_captures)
     for square in end_squares:
-        moves.append([f'{globals.player_turn}_pawn', index, square])
+        if not results_in_check(piece, index, square):
+            move = (piece, index, square)
+            moves.append(move)
     return moves
 
 
@@ -486,19 +488,18 @@ def gen_legal_moves():
 
     for move in all_moves:
         piece, starting_square, target_square = move
-        if not results_in_check(piece, starting_square, target_square):
+        switch_player_turn()
+        if results_in_check(piece, starting_square, target_square):
+            checks.append(move)
             switch_player_turn()
-            if results_in_check(piece, starting_square, target_square):
-                checks.append(move)
-                switch_player_turn()
-                continue
-            else:
-                switch_player_turn()
+            continue
+        else:
+            switch_player_turn()
 
-            if (np.uint64(1) << target_square) & opponent_bitboard:
-                captures.append(move)
-            else:
-                non_captures.append(move)
+        if (np.uint64(1) << target_square) & opponent_bitboard:
+            captures.append(move)
+        else:
+            non_captures.append(move)
     return checks, captures, non_captures
 
 
