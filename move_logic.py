@@ -164,8 +164,7 @@ def generate_pawn_moves_list(index):
     end_squares = extract_set_bits(valid_quiets | valid_captures)
     for square in end_squares:
         if not results_in_check(piece, index, square):
-            move = (piece, index, square)
-            moves.append(move)
+            moves.append([f'{globals.player_turn}_pawn', index, square])
     return moves
 
 
