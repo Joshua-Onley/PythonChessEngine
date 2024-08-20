@@ -139,18 +139,6 @@ def generate_king_moves_bitboard(index):
     return (precomputed_tables.KING_MOVES[index] & ~pieces_bitboard) | castling_moves
 
 
-def compute_pawn_attack_moves(index):
-    bb = np.uint64(1 << index)
-    file_a_mask = np.uint64(0x7F7F7F7F7F7F7F7F)
-    file_h_mask = np.uint64(0xFEFEFEFEFEFEFEFE)
-    if globals.player_turn == 'white':
-        left_attack = (bb & file_h_mask) << 7
-        right_attack = (bb & file_a_mask) << 9
-    else:
-        left_attack = (bb & file_h_mask) >> 9
-        right_attack = (bb & file_a_mask) >> 7
-    return left_attack | right_attack
-
 
 def calculate_king_moves(index):
     if globals.player_turn == 'white':
@@ -162,14 +150,16 @@ def calculate_king_moves(index):
 def generate_pawn_moves_list(index):
 
     moves = []
-    quiet_moves = compute_pawn_quiet_moves(index)
-    attacking_moves = compute_pawn_attack_moves(index)
     if globals.player_turn == 'white':
+        quiet_moves = compute_pawn_quiet_moves(index)
+        attacking_moves = PAWN_ATTACKS[1][index]
         valid_captures = attacking_moves & globals.black_pieces_bitboard
-        valid_quiets = quiet_moves & ~globals.black_pieces_bitboard
+        valid_quiets = quiet_moves & ~globals.all_pieces_bitboard
     else:
+        quiet_moves = compute_pawn_quiet_moves(index)
+        attacking_moves = PAWN_ATTACKS[0][index]
         valid_captures = attacking_moves & globals.white_pieces_bitboard
-        valid_quiets = quiet_moves & ~globals.white_pieces_bitboard
+        valid_quiets = quiet_moves & ~globals.all_pieces_bitboard
 
     end_squares = extract_set_bits(valid_quiets | valid_captures)
     for square in end_squares:

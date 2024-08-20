@@ -321,26 +321,6 @@ PAWN_ATTACKS = np.fromiter(
 PAWN_ATTACKS.shape = (2, 64)
 
 
-def compute_pawn_quiet_moves(colour, i):
-    shift_forward = lambda bitboard, colour, i: \
-        bitboard << np.uint(8 * i) if colour == 'white' else bitboard >> np.uint8(8 * i)
-    starting_rank = ROWS[1] if colour == 'white' else ROWS[6]
-
-    bitboard = np.uint64(1) << i
-
-    s1 = shift_forward(bitboard, colour, 1)
-    s2 = shift_forward((bitboard & starting_rank), colour, 2)
-
-    return s1 | s2
-
-PAWN_QUIETS = np.fromiter(
-    (compute_pawn_quiet_moves(colour, i)
-     for colour in ['white', 'black']
-     for i in range(64)),
-    dtype=np.uint64,
-    count=2 * 64)
-PAWN_QUIETS.shape = (2, 64)
-
 
 def calculate_knight_moves(index):
     knight_position_bitboard = np.uint64(1) << index

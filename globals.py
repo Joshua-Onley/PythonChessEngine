@@ -17,17 +17,17 @@ half_move_counter = 0
 
 piece_bitboards = {
     'white_pawn': np.uint64(0x000000000000FF00),
-    'white_knight': np.uint64(0x0000000000000000),
-    'white_bishop': np.uint64(0x0000000000000000),
-    'white_rook': np.uint64(0x0000000000000000),
-    'white_queen': np.uint64(0x0000000000000000),
-    'white_king': np.uint64(0x0000000000000000),
-    'black_pawn': np.uint64(0x0300000000000000),
-    'black_knight': np.uint64(0x0000000000000000),
-    'black_bishop': np.uint64(0x0000000000000000),
-    'black_rook': np.uint64(0x0000000000000000),
-    'black_queen': np.uint64(0x0000000000000000),
-    'black_king': np.uint64(0x0000000000000000)
+    'white_knight': np.uint64(0x0000000000000042),
+    'white_bishop': np.uint64(0x0000000000000024),
+    'white_rook': np.uint64(0x0000000000000081),
+    'white_queen': np.uint64(0x0000000000000008),
+    'white_king': np.uint64(0x0000000000000010),
+    'black_pawn': np.uint64(0x00FF000000000000),
+    'black_knight': np.uint64(0x4200000000000000),
+    'black_bishop': np.uint64(0x2400000000000000),
+    'black_rook': np.uint64(0x8100000000000000),
+    'black_queen': np.uint64(0x0800000000000000),
+    'black_king': np.uint64(0x1000000000000000)
 }
 
 
