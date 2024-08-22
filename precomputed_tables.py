@@ -286,7 +286,6 @@ def compute_first_row_moves(i, occ):
 
     return left_attacks ^ right_attacks
 
-
 FIRST_ROW_MOVES = np.fromiter(
     (compute_first_row_moves(i, occ)
      for i in range(8)

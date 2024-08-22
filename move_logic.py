@@ -16,7 +16,6 @@ empty_bitboard = np.uint64(0)
 
 def generate_knight_moves_list(index):
     '''
-
     :param index:
     :return:
     '''
