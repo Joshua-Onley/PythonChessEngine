@@ -46,7 +46,7 @@ Installation:
 **AI Mechanics**
 
 The chess AI uses the minimax algorithm with alpha-beta pruning to decide its move.
-* Board evaluation: The program uses piece-square tables (PSTs) to evaluate a position. This evaluation function calculates the value of a position by considering the values of the pieces on the board and then assigning additional bonuses depending on what square a specific piece is on. The code for this can be found in the evaluation.py file and in the piece_square_tables.py file.
+* Board evaluation: The program uses piece-square tables (PSTs) to evaluate a position. This evaluation function calculates the value of a position by considering the values of the pieces on the board and then assigning additional bonuses depending on what square a specific piece is on. The code for this can be found in the PST_evaluation.py file and the piece_square_tables.py file.
 * Search: the algorithm uses the minimax algorithm to find all the possible moves and simulating all of them up to a specified depth. This depth can be altered in the computer_move.py file (increasing the search depth exponentially increases the time taken for the AI to calculate its move).
 * Move ordering: the program orderes checks and captures before quiet moves using the MVV-LVA technique.
 
