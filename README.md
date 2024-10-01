@@ -32,7 +32,7 @@ To run this project you must have:
 Installation: 
 
 1. Clone the repository: git clone https://github.com/Joshua-Onley/chess-ai.git
-cd chess-ai
+
 2. run the game by running the main.py file (python main.py)
 
 **How to Play**
