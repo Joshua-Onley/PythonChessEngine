@@ -8,7 +8,6 @@ from bit_manipulation import clear_square, set_square
 import cProfile
 import pstats
 import io
-import alpha_beta_minimax
 import quiescence_minimax
 from globals import switch_player_turn
 from utils import determine_what_piece_has_been_selected
