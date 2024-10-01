@@ -49,4 +49,5 @@ The chess AI uses the minimax algorithm with alpha-beta pruning to decide its mo
 * Move ordering: the program orderes checks and captures before quiet moves using the MVV-LVA technique.
 
 **Contributing**
-Contributions, issues, and feature requests are welcome!
+
+This is my first big coding project so there are definately improvements to be made that i am unaware of. Therefore, contributions, issues, and feature requests are welcome! 
