@@ -10,11 +10,8 @@ from debugging_functions import print_binary_as_bitboard
 from move_logic import checkmate, make_move
 
 import quiescence_minimax
-from alpha_beta_minimax import alpha_beta_minimax
 from quiescence_minimax import alpha_beta_quiescence_minimax
-from standard_minimax import minimax
-from alpha_beta_minimax_no_TT import alpha_beta_minimax_
-import standard_minimax
+
 
 
 import alpha_beta_minimax_no_TT
