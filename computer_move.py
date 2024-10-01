@@ -14,8 +14,6 @@ from quiescence_minimax import alpha_beta_quiescence_minimax
 
 
 
-import alpha_beta_minimax_no_TT
-
 def make_computer_move(colour):
 
     depth = 2
