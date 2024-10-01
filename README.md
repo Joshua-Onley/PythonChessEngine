@@ -1,8 +1,10 @@
 **Overview**
 
-This project is a chess AI built using Python and Pygame. The AI is designed to evaluate board positions and make decisions based on the minimax algorithm. This version of the program represents the board state using binary numbers also known as bitboards as opposed to the other version which uses a two-dimensional array to store the state of the board. Using bitboards instead of a two-dimensional array significantly boosts the performance of the program because calculating the legal moves can be done with efficient bitwise operations as opposed to lots of nested loops. 
+This project is a chess AI built using Python and Pygame. The AI is designed to evaluate board positions and make decisions based on the minimax algorithm. This version of the program represents the board state using binary numbers also known as bitboards.
 
 **GUI**
+
+The GUI was implemented using Pygame.
 
 
 <img width="804" alt="Screenshot 2024-10-01 at 15 06 53" src="https://github.com/user-attachments/assets/347ce1d5-9046-430c-bfee-b24185f88db8">
