@@ -1,3 +1,8 @@
+""" This is an alternative evaluation function to the PST evaluation. This evaluation function calculates
+an evaluation score based on different positional attributes. The program does not use this function because it is weaker
+in comparison to the PST evaluation function"""
+
+
 from bit_manipulation import occupied_squares, pop_count
 from precomputed_tables import FRONT_SPANS, neighbor_columns, KING_FRONT_SPANS, ADJACENT_SQUARES, PAWN_ATTACKS
 from move_logic import generate_bishop_moves_bitboard, generate_rook_moves_bitboard, generate_knight_moves_bitboard, gen_legal_moves
