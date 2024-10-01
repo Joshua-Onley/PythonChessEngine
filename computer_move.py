@@ -25,9 +25,7 @@ def make_computer_move(colour):
         print(f'Move: `{globals.half_move_counter}')
         print(f'time taken: {time_taken}')
         print(f'leaf nodes evaluated: {quiescence_minimax.leaf_node_count}')
-        print(f'leaf node evaluations retrieved from transposition table: {quiescence_minimax.leaf_node_evaluations_retrieved_from_transposition_table}')
-        quiescence_minimax.leaf_node_count, quiescence_minimax.leaf_node_evaluations_retrieved_from_transposition_table = 0,0 # reset counter
-        print('\n')
+    
 
     else:
         start_time = time.time()
