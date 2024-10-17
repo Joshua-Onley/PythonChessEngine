@@ -17,13 +17,6 @@ The GUI was implemented using Pygame.
 * Implements the minimax algorithm and quiescence search
 * currently does not support the 50 move draw rule or the threefold repitition rule
 
-**Table of Contents**
-
-1. Project Setup
-2. How to Play
-3. AI Mechanics
-4. Technologies used
-
 **Project Setup**
 
 To run this project you must have:
@@ -33,7 +26,7 @@ To run this project you must have:
 
 Installation: 
 
-1. Clone the repository: git clone https://github.com/Joshua-Onley/chess-ai.git
+1. Clone the repository: git clone https://github.com/Joshua-Onley/PythonChessEngine.git
 
 2. run the game by running the main.py file (python main.py)
 
