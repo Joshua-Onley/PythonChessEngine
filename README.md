@@ -8,7 +8,7 @@ The GUI was implemented using Pygame.
 
 **Demo**
 
-![Chess AI Demo](https://github.com/Joshua-Onley/PythonChessEngine/blob/main/images/chessdemo.gif)
+<img src="https://github.com/Joshua-Onley/PythonChessEngine/blob/main/images/chessdemo.gif" width="400" />
 
 
 **Features**
