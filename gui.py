@@ -14,11 +14,11 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 
 def draw_board_from_bitboards(win, wp, wn, wb, wr, wq, wk, bp, bn, bb, br, bq, bk, images):
-    colors = [WHITE, GRAY]
+    colours = [WHITE, GRAY]
     for row in range(8):
         for col in range(8):
-            color = colors[(row + col) % 2]
-            pygame.draw.rect(win, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            colour = colours[(row + col) % 2]
+            pygame.draw.rect(win, colour, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     piece_bitboards = {
         'wp': wp, 'wn': wn, 'wb': wb, 'wr': wr, 'wq': wq, 'wk': wk,
